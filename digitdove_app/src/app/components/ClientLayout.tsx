@@ -1,18 +1,102 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "./Navbar";
 import { useFormat } from "../providers/FormatContext";
 import { useGlobalContext } from "../providers/GlobalContext";
 import { useRouter } from "next/navigation";
 const ClientLayout = ({ children }: { children: React.ReactNode }) => {
   const { format } = useFormat();
+  const {
+    sideNavbarWidth,
+    topNavbarHeight,
+    maxSideNavbarWidth,
+    maxTopNavbarHeight,
+    minSideNavbarWidth,
+    minTopNavbarHeight,
+  } = format;
   const { loggedIn } = useGlobalContext();
   const router = useRouter();
+
+  const [actualSideNavbarWidth, setActualSideNavbarWidth] = useState("0px");
+  const [actualTopNavbarHeight, setActualTopNavbarHeight] = useState("0px");
+
+  const calculateSideNavbarWidth = () => {
+    const sideNavbarWidthPx =
+      typeof sideNavbarWidth === "string" && sideNavbarWidth.endsWith("%")
+        ? (parseFloat(sideNavbarWidth) / 100) * window.innerWidth
+        : parseFloat(sideNavbarWidth);
+
+    const maxSideNavbarWidthPx =
+      typeof maxSideNavbarWidth === "string" &&
+      maxSideNavbarWidth.endsWith("px")
+        ? parseFloat(maxSideNavbarWidth)
+        : parseFloat(maxSideNavbarWidth);
+
+    const minSideNavbarWidthPx =
+      typeof minSideNavbarWidth === "string" &&
+      minSideNavbarWidth.endsWith("px")
+        ? parseFloat(minSideNavbarWidth)
+        : parseFloat(minSideNavbarWidth);
+
+    return Math.max(
+      minSideNavbarWidthPx,
+      Math.min(sideNavbarWidthPx, maxSideNavbarWidthPx)
+    );
+  };
+
+  const calculateTopNavbarHeight = () => {
+    const topNavbarHeightPx =
+      typeof topNavbarHeight === "string" && topNavbarHeight.endsWith("%")
+        ? (parseFloat(topNavbarHeight) / 100) * window.innerHeight
+        : parseFloat(topNavbarHeight);
+
+    const maxTopNavbarHeightPx =
+      typeof maxTopNavbarHeight === "string" &&
+      maxTopNavbarHeight.endsWith("px")
+        ? parseFloat(maxTopNavbarHeight)
+        : parseFloat(maxTopNavbarHeight);
+
+    const minTopNavbarHeightPx =
+      typeof minTopNavbarHeight === "string" &&
+      minTopNavbarHeight.endsWith("px")
+        ? parseFloat(minTopNavbarHeight)
+        : parseFloat(minTopNavbarHeight);
+
+    return Math.max(
+      minTopNavbarHeightPx,
+      Math.min(topNavbarHeightPx, maxTopNavbarHeightPx)
+    );
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      const width = calculateSideNavbarWidth();
+      const height = calculateTopNavbarHeight();
+      setActualSideNavbarWidth(`${width}px`);
+      setActualTopNavbarHeight(`${height}px`);
+    };
+
+    handleResize(); // Set initial width and height
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [
+    sideNavbarWidth,
+    topNavbarHeight,
+    maxSideNavbarWidth,
+    maxTopNavbarHeight,
+    minSideNavbarWidth,
+    minTopNavbarHeight,
+  ]);
+
   useEffect(() => {
     if (!loggedIn) {
       router.push("/auth");
     }
   }, [loggedIn]);
+
   return (
     <>
       {" "}
@@ -29,10 +113,10 @@ const ClientLayout = ({ children }: { children: React.ReactNode }) => {
             <div
               className="relative z-10"
               style={{
-                left: format.sideNavbarWidth,
-                top: format.topNavbarHeight,
-                height: `calc(100vh - ${format.topNavbarHeight})`,
-                width: `calc(100vw - ${format.sideNavbarWidth})`,
+                left: actualSideNavbarWidth,
+                top: actualTopNavbarHeight,
+                height: `calc(100vh - ${actualTopNavbarHeight})`,
+                width: `calc(100vw - ${actualSideNavbarWidth})`,
               }}
             >
               {children}
@@ -54,11 +138,7 @@ const ClientLayout = ({ children }: { children: React.ReactNode }) => {
       ) : (
         <div>
           you are not logged in
-          <div
-            className="relative z-10"
-          >
-            {children}
-          </div>
+          <div className="relative z-10">{children}</div>
         </div>
       )}
     </>

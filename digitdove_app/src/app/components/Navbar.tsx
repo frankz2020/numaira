@@ -36,6 +36,8 @@ const Navbar = () => {
         style={{
           backgroundColor: theme.secondaryColor,
           height: format.topNavbarHeight,
+          minHeight: format.minTopNavbarHeight,
+          maxHeight: format.maxTopNavbarHeight,
         }}
       >
         <div className="flex justify-between items-center w-full">
@@ -78,6 +80,8 @@ const Navbar = () => {
         style={{
           backgroundColor: theme.secondaryColor,
           width: format.sideNavbarWidth,
+          maxWidth: format.maxSideNavbarWidth,
+          minWidth: format.minSideNavbarWidth,
           height: `calc(100vh - ${format.topNavbarHeight})`,
         }}
       >

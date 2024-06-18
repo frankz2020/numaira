@@ -16,8 +16,21 @@ interface Theme {
   secondaryColor: string;
   backgroundColor: string;
   textColor: string;
+  // highlightTextColor: string;
+  [key: string]: string; // To support additional colors
 }
 
+interface ColorType {
+  primaryColor: string;
+  secondaryColor: string;
+  backgroundColor: string;
+  themeColor: string;
+  backgroundGray: string;
+  white: string;
+  textColor: string;
+}
+
+const colors: ColorType = Color as unknown as ColorType;
 // Create the context with a default value
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
@@ -26,8 +39,39 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<Theme | null>(null);
 
   useEffect(() => {
-    // Fetch the theme.json file
-    setTheme(Color);
+
+    const detectColorScheme = () => {
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // Dark mode colors
+        setTheme({
+          primaryColor: colors.primaryColor as string, // Ensure these keys exist in your JSON
+          secondaryColor: colors.secondaryColor,
+          backgroundColor: colors.backgroundColor,
+          textColor: colors.textColor,
+          // Add other colors as needed
+        });
+      } else {
+        // Light mode colors
+        setTheme({
+          primaryColor: colors.primaryColor, // Ensure these keys exist in your JSON
+          secondaryColor: colors.secondaryColor,
+          backgroundColor: colors.backgroundColor,
+          textColor: colors.textColor,
+          // Add other colors as needed
+        });
+      }
+    };
+    detectColorScheme();
+
+    // Listen for changes in color scheme
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', detectColorScheme);
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', detectColorScheme);
+
+    // Cleanup event listeners on unmount
+    return () => {
+      window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', detectColorScheme);
+      window.matchMedia('(prefers-color-scheme: light)').removeEventListener('change', detectColorScheme);
+    };
   }, []);
 
   // set base theme

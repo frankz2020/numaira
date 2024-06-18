@@ -12,6 +12,10 @@ interface FormatContextProps {
 }
 
 interface Format {
+  maxSideNavbarWidth: string;
+  maxTopNavbarHeight: string;
+  minTopNavbarHeight: string;
+  minSideNavbarWidth: string;
   sideNavbarWidth: string;
   topNavbarHeight: string;
   roundsm: string;
