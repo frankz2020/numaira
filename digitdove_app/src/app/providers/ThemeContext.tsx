@@ -23,6 +23,8 @@ interface Theme {
 interface ColorType {
   primaryColor: string;
   secondaryColor: string;
+  thridaryColor: string;
+  fourthColor: string;
   backgroundColor: string;
   themeColor: string;
   backgroundGray: string;
@@ -47,7 +49,9 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
           primaryColor: colors.primaryColor as string, // Ensure these keys exist in your JSON
           secondaryColor: colors.secondaryColor,
           backgroundColor: colors.backgroundColor,
+          thridaryColor: colors.thridaryColor,
           textColor: colors.textColor,
+          fourthColor: colors.fourthColor,
           // Add other colors as needed
         });
       } else {
@@ -56,7 +60,9 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
           primaryColor: colors.primaryColor, // Ensure these keys exist in your JSON
           secondaryColor: colors.secondaryColor,
           backgroundColor: colors.backgroundColor,
+          thridaryColor: colors.thridaryColor,
           textColor: colors.textColor,
+          fourthColor: colors.fourthColor,
           // Add other colors as needed
         });
       }

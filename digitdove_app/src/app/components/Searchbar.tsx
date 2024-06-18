@@ -9,15 +9,19 @@ const SearchContainer = styled.div<{ isFocused: boolean }>`
   align-items: center;
   padding: 0.3rem;
   border-radius: 4px;
-  box-shadow: ${({ isFocused }) =>
-    isFocused
-      ? "0 6px 10px rgba(0, 0, 0, 0.3)"
-      : "0 2px 4px rgba(0, 0, 0, 0.2)"};
-  transition: box-shadow 0.3s, border-color 0.3s;
+  border: ${({ theme }) => `2px solid ${theme.fourthColor}`};
+  transition: border 0.3s, border-color 0.3s, width 0.3s ease-in-out, height 0.3s ease-in-out;
   background-color: ${({ theme }) => theme.backgroundColor};
-  min-width: 30%;
   width: 440px;
+  max-width: 600px;
+  position: relative;
   z-index: 11; // Ensure the search container is above the blurred overlay
+`;
+
+const SearchInputContainer = styled.div`
+  display: flex;
+  align-items: center;
+  width: 100%;
 `;
 
 const SearchInput = styled.input<{ isFocused: boolean }>`
@@ -32,18 +36,24 @@ const SearchInput = styled.input<{ isFocused: boolean }>`
   }
 `;
 
-const SearchResultContainer = styled.div`
+const SearchResultContainer = styled.div<{ isFocused: boolean }>`
   position: absolute;
-  top: 10vh;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 80%;
-  max-width: 600px;
-  padding: 1rem;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 40vh; // Limit the height of the search results container
+  overflow-y: auto; // Make it scrollable if the content overflows
+  margin-top: 0.3rem; // Add some space between the input and results
   border-radius: 4px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-left: ${({ theme }) => `2px solid ${theme.fourthColor}`};
+  border-right: ${({ theme }) => `2px solid ${theme.fourthColor}`};
+  border-bottom: ${({ theme }) => `2px solid ${theme.fourthColor}`};
   background-color: ${({ theme }) => theme.backgroundColor};
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  opacity: ${({ isFocused }) => (isFocused ? 1 : 0)};
+  pointer-events: ${({ isFocused }) => (isFocused ? "auto" : "none")};
   z-index: 10;
+  padding: 0.3rem;
 `;
 
 const BlurredOverlay = styled.div`
@@ -88,34 +98,39 @@ export const SearchBar: React.FC = () => {
   return (
     <div className="relative">
       <SearchContainer theme={theme} isFocused={isFocused}>
-        <SearchSVG
-          width={24}
-          height={24}
-          className="ms-2"
-          stroke={theme.textColor}
-        />
-        <SearchInput
-          type="text"
-          placeholder="Search..."
-          value={search}
-          onChange={(e: any) => setSearch(e.target.value)}
-          onFocus={() => setIsFocused(true)}
-          theme={theme}
-          isFocused={isFocused}
-        />
-      </SearchContainer>
-      {isFocused && search && (
-        <>
-          <BlurredOverlay />
-          <SearchResultContainer theme={theme} ref={searchResultRef}>
+        <SearchInputContainer>
+          <SearchSVG
+            width={24}
+            height={24}
+            className="ms-2"
+            stroke={theme.textColor}
+          />
+          <SearchInput
+            type="text"
+            placeholder="Search..."
+            value={search}
+            onChange={(e: any) => setSearch(e.target.value)}
+            onFocus={() => setIsFocused(true)}
+            theme={theme}
+            isFocused={isFocused}
+          />
+        </SearchInputContainer>
+        {isFocused && search && (
+          <SearchResultContainer theme={theme} ref={searchResultRef} isFocused={isFocused}>
             {/* Render search results here */}
-            <div className="text-xl py-2">{search}</div>
-
-            <hr className="p-2" />
-            <p>Search results shows below</p>
+            <p>Search results show below</p>
+            <p>Search results show below</p>
+            <p>Search results show below</p>
+            <p>Search results show below</p>
+            <p>Search results show below</p>
+            <p>Search results show below</p>
+            <p>Search results show below</p>
+            <p>Search results show below</p>
+            <p>Search results show below</p>
           </SearchResultContainer>
-        </>
-      )}
+        )}
+      </SearchContainer>
+      {isFocused && search && <BlurredOverlay />}
     </div>
   );
 };

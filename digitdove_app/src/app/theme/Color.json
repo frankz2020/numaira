@@ -1,8 +1,16 @@
 {
-    "primaryColor": "#0066FF",
-    "secondaryColor": "#F0F0F0",
-    "backgroundColor": "#FFFFFF",
     "textColor": "#212121",
-    "highlightTextColor": "#212121"
+    "highlightTextColor": "#212121",
+    "white": "#FFFFFF",
+    "backgroundGray":"#F6F6F6",
+    "lineGray": "#EDEDED",
+    "readableGray": "#767676",
+    "offBlack": "#212121",
+    "themeColor": "#0066FF",
+    "primaryColor": "#0066FF",
+    "thridaryColor": "#767676",
+    "secondaryColor": "#F6F6F6",
+    "fourthColor": "#EDEDED",
+    "backgroundColor": "#FFFFFF"
   }
   

@@ -21,6 +21,16 @@ interface Format {
   roundsm: string;
   roundmd: string;
   roundlg: string;
+  display2XL: string;
+  displayXL: string;
+  displayLG: string;
+  displayMD: string;
+  displaySM: string;
+  textXL: string;
+  textLG: string;
+  textMD: string;
+  textSM: string;
+  textXS: string;
 }
 
 // Create the context with a default value

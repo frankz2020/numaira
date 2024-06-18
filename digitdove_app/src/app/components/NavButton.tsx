@@ -93,7 +93,8 @@ const NavButton: React.FC<NavButtonProps> = ({
         <SvgIcon
           width={30}
           height={30}
-          stroke={selected ? theme.primaryColor : theme.textColor}
+          stroke={selected ? theme.secondaryColor : theme.textColor}
+          fill= {selected ? theme.primaryColor : "none"}
           strokeWidth={2}
           className="transition-all"
         />

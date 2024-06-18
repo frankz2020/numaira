@@ -32,20 +32,28 @@ const Navbar = () => {
     <>
       {/* Top Navbar */}
       <div
-        className="w-full flex justify-between items-center p-2"
+        className="w-full flex justify-between items-center p-2 border-b-2"
         style={{
+          borderColor: theme.fourthColor,
           backgroundColor: theme.secondaryColor,
           height: format.topNavbarHeight,
           minHeight: format.minTopNavbarHeight,
           maxHeight: format.maxTopNavbarHeight,
+         
         }}
       >
         <div className="flex justify-between items-center w-full">
           <div
-            className="text-xl"
+            style={{
+              color: theme.primaryColor,
+              fontSize: format.textXL,
+              fontWeight: "bold",
+            }}
             onClick={() => {
               console.log("click");
+              router.push("/");
             }}
+            className="cursor-pointer p-2"
           >
             DigitDove
           </div>
@@ -76,8 +84,9 @@ const Navbar = () => {
 
       {/* Side Navbar */}
       <div
-        className="flex flex-col p-1 h-full gap-4"
+        className="flex flex-col p-1 h-full gap-4 border-r-2"
         style={{
+          borderColor: theme.fourthColor,
           backgroundColor: theme.secondaryColor,
           width: format.sideNavbarWidth,
           maxWidth: format.maxSideNavbarWidth,
