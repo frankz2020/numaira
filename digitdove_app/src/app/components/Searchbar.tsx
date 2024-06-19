@@ -9,9 +9,9 @@ const SearchContainer = styled.div<{ isFocused: boolean }>`
   align-items: center;
   padding: 0.3rem;
   border-radius: 4px;
-  border: ${({ theme }) => `2px solid ${theme.fourthColor}`};
+  border: ${({ theme }) => `2px solid ${theme.neutual200}`};
   transition: border 0.3s, border-color 0.3s, width 0.3s ease-in-out, height 0.3s ease-in-out;
-  background-color: ${({ theme }) => theme.backgroundColor};
+  background-color: ${({ theme }) => theme.neutral};
   width: 440px;
   max-width: 600px;
   position: relative;
@@ -30,9 +30,9 @@ const SearchInput = styled.input<{ isFocused: boolean }>`
   border: none;
   outline: none;
   background-color: transparent;
-  color: ${({ theme }) => theme.textColor};
+  color: ${({ theme }) => theme.neutral1000};
   &::placeholder {
-    color: ${({ theme }) => theme.textColor};
+    color: ${({ theme }) => theme.neutral1000};
   }
 `;
 
@@ -45,10 +45,10 @@ const SearchResultContainer = styled.div<{ isFocused: boolean }>`
   overflow-y: auto; // Make it scrollable if the content overflows
   margin-top: 0.3rem; // Add some space between the input and results
   border-radius: 4px;
-  border-left: ${({ theme }) => `2px solid ${theme.fourthColor}`};
-  border-right: ${({ theme }) => `2px solid ${theme.fourthColor}`};
-  border-bottom: ${({ theme }) => `2px solid ${theme.fourthColor}`};
-  background-color: ${({ theme }) => theme.backgroundColor};
+  border-left: ${({ theme }) => `2px solid ${theme.neutual200}`};
+  border-right: ${({ theme }) => `2px solid ${theme.neutual200}`};
+  border-bottom: ${({ theme }) => `2px solid ${theme.neutual200}`};
+  background-color: ${({ theme }) => theme.neutral};
   transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
   opacity: ${({ isFocused }) => (isFocused ? 1 : 0)};
   pointer-events: ${({ isFocused }) => (isFocused ? "auto" : "none")};
@@ -103,7 +103,7 @@ export const SearchBar: React.FC = () => {
             width={24}
             height={24}
             className="ms-2"
-            stroke={theme.textColor}
+            stroke={theme.neutral1000}
           />
           <SearchInput
             type="text"

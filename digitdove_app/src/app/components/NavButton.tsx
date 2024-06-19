@@ -24,8 +24,9 @@ const HighlightBar = styled.div<{
 }>`
   position: absolute;
   transition: all 0.3s ease;
+  border-radius: 4px;
   background-color: ${({ selected, theme }) =>
-    selected ? theme.primaryColor : "transparent"};
+    selected ? theme.primary : "transparent"};
   ${({ highlightDirection }) => {
     switch (highlightDirection) {
       case HighlightDirection.Left:
@@ -33,21 +34,21 @@ const HighlightBar = styled.div<{
           left: 0;
           top: 0;
           bottom: 0;
-          width: 2px;
+          width: 3px;
         `;
       case HighlightDirection.Right:
         return `
           right: 0;
           top: 0;
           bottom: 0;
-          width: 2px;
+          width: 3px;
         `;
       case HighlightDirection.Bottom:
         return `
           left: 0;
           right: 0;
           bottom: 0;
-          height: 2px;
+          height: 3px;
           padding-top: 4px;
         `;
       case HighlightDirection.Top:
@@ -55,7 +56,7 @@ const HighlightBar = styled.div<{
           left: 0;
           right: 0;
           top: 0;
-          height: 2px;
+          height: 3px;
         `;
       default:
         return "";
@@ -93,8 +94,8 @@ const NavButton: React.FC<NavButtonProps> = ({
         <SvgIcon
           width={30}
           height={30}
-          stroke={selected ? theme.secondaryColor : theme.textColor}
-          fill= {selected ? theme.primaryColor : "none"}
+          stroke={selected ? theme.neutral100 : theme.neutral1000}
+          fill= {selected ? theme.primary : "none"}
           strokeWidth={2}
           className="transition-all"
         />
@@ -102,7 +103,7 @@ const NavButton: React.FC<NavButtonProps> = ({
       {name && (
         <div
           className="text-xs font-semibold "
-          style={{ color: selected ? theme.primaryColor : theme.textColor }}
+          style={{ color: selected ? theme.primary : theme.neutral1000 }}
         >
           {name}
         </div>

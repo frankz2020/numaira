@@ -12,24 +12,25 @@ interface ThemeContextProps {
 }
 
 interface Theme {
-  primaryColor: string;
-  secondaryColor: string;
-  backgroundColor: string;
-  textColor: string;
+  primary: string;
+  neutral: string;
+  neutral100: string;
+  neutral200: string;
+  neutral300: string;
+  neutral700: string;
+  neutral1000: string;
   // highlightTextColor: string;
   [key: string]: string; // To support additional colors
 }
 
 interface ColorType {
-  primaryColor: string;
-  secondaryColor: string;
-  thridaryColor: string;
-  fourthColor: string;
-  backgroundColor: string;
-  themeColor: string;
-  backgroundGray: string;
-  white: string;
-  textColor: string;
+  primary: string;
+  neutral: string;
+  neutral100: string;
+  neutral200: string;
+  neutral700: string;
+  neutral1000: string;
+  [key: string]: string;
 }
 
 const colors: ColorType = Color as unknown as ColorType;
@@ -46,23 +47,25 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
         // Dark mode colors
         setTheme({
-          primaryColor: colors.primaryColor as string, // Ensure these keys exist in your JSON
-          secondaryColor: colors.secondaryColor,
-          backgroundColor: colors.backgroundColor,
-          thridaryColor: colors.thridaryColor,
-          textColor: colors.textColor,
-          fourthColor: colors.fourthColor,
+          primary: colors.primary,
+          neutral100: colors.neutral100,
+          neutral: colors.neutral,
+          neutral700: colors.neutral700,
+          neutral1000: colors.neutral1000,
+          neutral200: colors.neutral200,
+          neutral300: colors.neutral300, // Add the missing property
           // Add other colors as needed
         });
       } else {
         // Light mode colors
         setTheme({
-          primaryColor: colors.primaryColor, // Ensure these keys exist in your JSON
-          secondaryColor: colors.secondaryColor,
-          backgroundColor: colors.backgroundColor,
-          thridaryColor: colors.thridaryColor,
-          textColor: colors.textColor,
-          fourthColor: colors.fourthColor,
+          primary: colors.primary,
+          neutral100: colors.neutral100,
+          neutral: colors.neutral,
+          neutral700: colors.neutral700,
+          neutral1000: colors.neutral1000,
+          neutral200: colors.neutral200,
+          neutral300: colors.neutral300, // Add the missing property
           // Add other colors as needed
         });
       }
@@ -84,17 +87,17 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   if (theme) {
     document.documentElement.style.setProperty(
       "--primary-color",
-      theme.primaryColor
+      theme.primary
     );
     document.documentElement.style.setProperty(
       "--secondary-color",
-      theme.secondaryColor
+      theme.neutral100
     );
     document.documentElement.style.setProperty(
       "--background-color",
-      theme.backgroundColor
+      theme.neutral
     );
-    document.documentElement.style.setProperty("--text-color", theme.textColor);
+    document.documentElement.style.setProperty("--text-color", theme.neutral1000);
   }
 
   if (!theme) {

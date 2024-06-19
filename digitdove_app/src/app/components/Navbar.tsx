@@ -34,8 +34,8 @@ const Navbar = () => {
       <div
         className="w-full flex justify-between items-center p-2 border-b-2"
         style={{
-          borderColor: theme.fourthColor,
-          backgroundColor: theme.secondaryColor,
+          borderColor: theme.neutual200,
+          backgroundColor: theme.neutral100,
           height: format.topNavbarHeight,
           minHeight: format.minTopNavbarHeight,
           maxHeight: format.maxTopNavbarHeight,
@@ -45,7 +45,7 @@ const Navbar = () => {
         <div className="flex justify-between items-center w-full">
           <div
             style={{
-              color: theme.primaryColor,
+              color: theme.primary,
               fontSize: format.textXL,
               fontWeight: "bold",
             }}
@@ -86,8 +86,8 @@ const Navbar = () => {
       <div
         className="flex flex-col p-1 h-full gap-4 border-r-2"
         style={{
-          borderColor: theme.fourthColor,
-          backgroundColor: theme.secondaryColor,
+          borderColor: theme.neutual200,
+          backgroundColor: theme.neutral100,
           width: format.sideNavbarWidth,
           maxWidth: format.maxSideNavbarWidth,
           minWidth: format.minSideNavbarWidth,

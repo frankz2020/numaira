@@ -15,7 +15,7 @@ const Home = () => {
         <button onClick={() => router.push("/about")}>Go to About </button>
         <div className="m-20">
           <p>Home testing</p>
-          <h1 style={{ color: theme.primaryColor }}>Hello, World!</h1>
+          <h1 style={{ color: theme.primary }}>Hello, World!</h1>
         </div>
       </div>
     </div>

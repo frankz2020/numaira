@@ -1,5 +1,4 @@
 {
-    "textColor": "#212121",
     "highlightTextColor": "#212121",
     "white": "#FFFFFF",
     "backgroundGray":"#F6F6F6",
@@ -7,10 +6,12 @@
     "readableGray": "#767676",
     "offBlack": "#212121",
     "themeColor": "#0066FF",
-    "primaryColor": "#0066FF",
-    "thridaryColor": "#767676",
-    "secondaryColor": "#F6F6F6",
-    "fourthColor": "#EDEDED",
-    "backgroundColor": "#FFFFFF"
+    "neutral": "#FFFFFF",
+    "neutral100": "#F6F6F6",
+    "neutual200": "#EDEDED",
+    "neutral700": "#767676",
+    "neutral1000": "#212121",
+    "primary": "#0066FF"
+
   }
   
