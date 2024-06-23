@@ -5,6 +5,7 @@ import { useFormat } from "../providers/FormatContext";
 import { useGlobalContext } from "../providers/GlobalContext";
 import { useRouter } from "next/navigation";
 import TopNav from "./TopNav";
+
 const ClientLayout = ({ children }: { children: React.ReactNode }) => {
   const { format } = useFormat();
   const {
@@ -98,14 +99,30 @@ const ClientLayout = ({ children }: { children: React.ReactNode }) => {
     }
   }, [loggedIn]);
 
+  useEffect(() => {
+    console.log("10  percent height:", (parseFloat(topNavbarHeight) / 100) * window.innerHeight)
+  }, []);
   return (
     <>
-      {" "}
       {loggedIn ? (
         <div>
-          {" "}
-          <div className=" relative h-screen hidden lg:block">
-            
+          <div className="relative h-screen hidden lg:block ">
+            {/* Top Navbar */}
+            <div className="absolute top-0 left-0 z-10 w-full" style={{minHeight: actualTopNavbarHeight}}>
+              <TopNav/>
+            </div>
+
+            {/* Side Navbar */}
+            <div
+              className="absolute top-0 left-0 z-0 h-full"
+              style={{
+                width: actualSideNavbarWidth,
+                top: actualTopNavbarHeight,
+              }}
+            >
+              <SideNav />
+            </div>
+
             {/* Main Content */}
             <div
               className="relative z-0"
@@ -118,19 +135,8 @@ const ClientLayout = ({ children }: { children: React.ReactNode }) => {
             >
               {children}
             </div>
-
-            {/* Top Navbar */}
-            <div className="absolute top-0 left-0 z-10  w-full ">
-              <TopNav />
-            </div>
-            <div 
-             style={{
-              top: actualTopNavbarHeight
-            }}
-            className="absolute top-0 left-0 z-0 h-full ">
-              <SideNav />
-            </div>
           </div>
+
           <div className="lg:hidden block p-5 h-screen">
             <div className="flex justify-center h-full">
               <div className="flex flex-col text-center justify-center h-full">
@@ -142,7 +148,7 @@ const ClientLayout = ({ children }: { children: React.ReactNode }) => {
                 </div>
               </div>
             </div>
-          </div>{" "}
+          </div>
         </div>
       ) : (
         <div>

@@ -64,7 +64,7 @@ const SideNav = () => {
           width: format.sideNavbarWidth,
           maxWidth: format.maxSideNavbarWidth,
           minWidth: format.minSideNavbarWidth,
-          height: `calc(100vh - ${format.topNavbarHeight})`,
+          // height: `calc(100vh - ${format.topNavbarHeight})`,
         }}
       >
         <NavButton

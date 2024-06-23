@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
-import SearchBar from './Searchbar';
-import NavButton, { HighlightDirection } from './NavButton';
+import React, { useState } from "react";
+import SearchBar from "./Searchbar";
+import NavButton, { HighlightDirection } from "./NavButton";
 import HomeSVG from "../assets/home.svg";
 import BrowseSVG from "../assets/browse.svg";
 import CreateSVG from "../assets/create.svg";
@@ -9,29 +9,29 @@ import CommunitySVG from "../assets/community.svg";
 import SettingSVG from "../assets/setting.svg";
 import BellSVG from "../assets/bell.svg";
 import HelpSVG from "../assets/helpMessage.svg";
-import { usePathname, useRouter } from 'next/navigation';
-import { useTheme } from '../providers/ThemeContext';
-import { useFormat } from '../providers/FormatContext';
-import { ButtonOptions } from './SideNav';
+import { usePathname, useRouter } from "next/navigation";
+import { useTheme } from "../providers/ThemeContext";
+import { useFormat } from "../providers/FormatContext";
+import { ButtonOptions } from "./SideNav";
 const TopNav = () => {
-    const router = useRouter();
+  const router = useRouter();
   const { theme } = useTheme();
   const { format } = useFormat();
   const [selectedBtn, setSelectedBtn] = useState(ButtonOptions.Home);
-  const pathname = usePathname()
+  const pathname = usePathname();
   return (
-    <div
-        className=" flex justify-between items-center p-2 border-b-2"
+    // <div className="h-100">
+      <div
+        className="relative flex justify-between items-center border-b-2"
         style={{
           borderColor: theme.neutual200,
           backgroundColor: theme.neutral100,
-          height: format.topNavbarHeight,
+          height:  (parseFloat(format.topNavbarHeight) / 100) * window.innerHeight,
           minHeight: format.minTopNavbarHeight,
           maxHeight: format.maxTopNavbarHeight,
-         
         }}
       >
-        <div className="flex justify-between items-center w-full">
+        <div className="flex justify-between items-center w-full h-100 p-2">
           <div
             style={{
               color: theme.primary,
@@ -70,7 +70,8 @@ const TopNav = () => {
           </div>
         </div>
       </div>
-  )
-}
+    // </div>
+  );
+};
 
-export default TopNav
+export default TopNav;
