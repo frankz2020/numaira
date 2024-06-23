@@ -1,9 +1,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import Navbar from "./Navbar";
+import SideNav from "./SideNav";
 import { useFormat } from "../providers/FormatContext";
 import { useGlobalContext } from "../providers/GlobalContext";
 import { useRouter } from "next/navigation";
+import TopNav from "./TopNav";
 const ClientLayout = ({ children }: { children: React.ReactNode }) => {
   const { format } = useFormat();
   const {
@@ -104,14 +105,10 @@ const ClientLayout = ({ children }: { children: React.ReactNode }) => {
         <div>
           {" "}
           <div className=" relative h-screen hidden lg:block">
-            {/* Top Navbar */}
-            <div className="absolute top-0 left-0 z-0 h-full w-full ">
-              <Navbar />
-            </div>
-
+            
             {/* Main Content */}
             <div
-              className="relative z-10"
+              className="relative z-0"
               style={{
                 left: actualSideNavbarWidth,
                 top: actualTopNavbarHeight,
@@ -120,6 +117,18 @@ const ClientLayout = ({ children }: { children: React.ReactNode }) => {
               }}
             >
               {children}
+            </div>
+
+            {/* Top Navbar */}
+            <div className="absolute top-0 left-0 z-10  w-full ">
+              <TopNav />
+            </div>
+            <div 
+             style={{
+              top: actualTopNavbarHeight
+            }}
+            className="absolute top-0 left-0 z-0 h-full ">
+              <SideNav />
             </div>
           </div>
           <div className="lg:hidden block p-5 h-screen">

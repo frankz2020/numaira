@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Home from "./pages/home/page";
-import Navbar from "./components/Navbar";
+import Navbar from "./components/SideNav";
 import { useFormat } from "./providers/FormatContext";
 
 export default function Main() {

@@ -4,12 +4,14 @@ import { useFormat } from "../providers/FormatContext";
 import { useTheme } from "../providers/ThemeContext";
 import SearchSVG from "../assets/search.svg";
 
-const SearchContainer = styled.div<{ isFocused: boolean }>`
+const SearchContainer = styled.div.attrs(({ isFocused }) => ({
+  'data-isfocused': isFocused,
+}))<{ isFocused: boolean }>`
   display: flex;
   align-items: center;
   padding: 0.3rem;
   border-radius: 4px;
-  border: ${({ theme }) => `2px solid ${theme.neutual200}`};
+  border: ${({ theme }) => `2px solid ${theme.neutral200}`};
   transition: border 0.3s, border-color 0.3s, width 0.3s ease-in-out, height 0.3s ease-in-out;
   background-color: ${({ theme }) => theme.neutral};
   width: 440px;
@@ -24,7 +26,9 @@ const SearchInputContainer = styled.div`
   width: 100%;
 `;
 
-const SearchInput = styled.input<{ isFocused: boolean }>`
+const SearchInput = styled.input.attrs(({ isFocused }) => ({
+  'data-isfocused': isFocused,
+}))<{ isFocused: boolean }>`
   flex: 1;
   padding: 0.5rem;
   border: none;
@@ -36,7 +40,9 @@ const SearchInput = styled.input<{ isFocused: boolean }>`
   }
 `;
 
-const SearchResultContainer = styled.div<{ isFocused: boolean }>`
+const SearchResultContainer = styled.div.attrs(({ isFocused }) => ({
+  'data-isfocused': isFocused,
+}))<{ isFocused: boolean }>`
   position: absolute;
   top: 100%;
   left: 0;
@@ -45,9 +51,9 @@ const SearchResultContainer = styled.div<{ isFocused: boolean }>`
   overflow-y: auto; // Make it scrollable if the content overflows
   margin-top: 0.3rem; // Add some space between the input and results
   border-radius: 4px;
-  border-left: ${({ theme }) => `2px solid ${theme.neutual200}`};
-  border-right: ${({ theme }) => `2px solid ${theme.neutual200}`};
-  border-bottom: ${({ theme }) => `2px solid ${theme.neutual200}`};
+  border-left: ${({ theme }) => `2px solid ${theme.neutral200}`};
+  border-right: ${({ theme }) => `2px solid ${theme.neutral200}`};
+  border-bottom: ${({ theme }) => `2px solid ${theme.neutral200}`};
   background-color: ${({ theme }) => theme.neutral};
   transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
   opacity: ${({ isFocused }) => (isFocused ? 1 : 0)};

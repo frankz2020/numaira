@@ -1,17 +1,16 @@
 {
-    "highlightTextColor": "#212121",
-    "white": "#FFFFFF",
-    "backgroundGray":"#F6F6F6",
-    "lineGray": "#EDEDED",
-    "readableGray": "#767676",
-    "offBlack": "#212121",
-    "themeColor": "#0066FF",
     "neutral": "#FFFFFF",
     "neutral100": "#F6F6F6",
-    "neutual200": "#EDEDED",
+    "neutral200": "#EDEDED",
     "neutral700": "#767676",
     "neutral1000": "#212121",
-    "primary": "#0066FF"
+    "primary": "#0066FF",
+    "neutral_dark": "#1E1E1E",
+    "neutral100_dark": "#2C2C2C",
+    "neutual200_dark": "#444444",
+    "neutral700_dark": "#ADADAD",
+    "neutral1000_dark": "#FFFFFF",
+    "primary_dark": "#4E95FF"
 
   }
   

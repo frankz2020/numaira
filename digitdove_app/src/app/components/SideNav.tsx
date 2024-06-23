@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import NavButton, { HighlightDirection } from "./NavButton";
 import { useTheme } from "../providers/ThemeContext";
 import { useFormat } from "../providers/FormatContext";
@@ -12,8 +12,8 @@ import SettingSVG from "../assets/setting.svg";
 import BellSVG from "../assets/bell.svg";
 import HelpSVG from "../assets/helpMessage.svg";
 import SearchBar from "./Searchbar";
-import { useRouter } from "next/navigation";
-enum ButtonOptions {
+import { useRouter,usePathname  } from "next/navigation";
+export enum ButtonOptions {
   Home,
   Create,
   Browse,
@@ -23,68 +23,41 @@ enum ButtonOptions {
   Bell,
   Setting,
 }
-const Navbar = () => {
+const SideNav = () => {
   const router = useRouter();
   const { theme } = useTheme();
   const { format } = useFormat();
   const [selectedBtn, setSelectedBtn] = useState(ButtonOptions.Home);
+  const pathname = usePathname()
+  useEffect(() => {
+    // Do something here...
+    switch (pathname) {
+      case "/home":
+        setSelectedBtn(ButtonOptions.Home);
+        break;
+      case "/create":
+        setSelectedBtn(ButtonOptions.Create);
+        break;
+      case "/browse":
+        setSelectedBtn(ButtonOptions.Browse);
+        break;
+      case "/template":
+        setSelectedBtn(ButtonOptions.Template);
+        break;
+      case "/community":
+        setSelectedBtn(ButtonOptions.Community);
+        break;
+      default:
+        setSelectedBtn(ButtonOptions.Home);
+        break;
+    }
+  }, [pathname])
+  
   return (
     <>
-      {/* Top Navbar */}
-      <div
-        className="w-full flex justify-between items-center p-2 border-b-2"
-        style={{
-          borderColor: theme.neutual200,
-          backgroundColor: theme.neutral100,
-          height: format.topNavbarHeight,
-          minHeight: format.minTopNavbarHeight,
-          maxHeight: format.maxTopNavbarHeight,
-         
-        }}
-      >
-        <div className="flex justify-between items-center w-full">
-          <div
-            style={{
-              color: theme.primary,
-              fontSize: format.textXL,
-              fontWeight: "bold",
-            }}
-            onClick={() => {
-              console.log("click");
-              router.push("/");
-            }}
-            className="cursor-pointer p-2"
-          >
-            DigitDove
-          </div>
-          <SearchBar />
-          <div className="flex justify-between gap-4 items-center">
-            <NavButton
-              highlightDirection={HighlightDirection.Left}
-              selected={selectedBtn == ButtonOptions.Bell}
-              onClick={() => setSelectedBtn(ButtonOptions.Bell)}
-              SvgIcon={BellSVG}
-            />
-            <NavButton
-              highlightDirection={HighlightDirection.Left}
-              selected={selectedBtn == ButtonOptions.Help}
-              onClick={() => setSelectedBtn(ButtonOptions.Help)}
-              SvgIcon={HelpSVG}
-            />
-            <NavButton
-              highlightDirection={HighlightDirection.Left}
-              selected={selectedBtn == ButtonOptions.Setting}
-              onClick={() => setSelectedBtn(ButtonOptions.Setting)}
-              SvgIcon={SettingSVG}
-            />
-            <div>Avatar</div>
-          </div>
-        </div>
-      </div>
-
       {/* Side Navbar */}
       <div
-        className="flex flex-col p-1 h-full gap-4 border-r-2"
+        className="flex flex-col p-1 h-full gap-4 border-r-2 pt-5"
         style={{
           borderColor: theme.neutual200,
           backgroundColor: theme.neutral100,
@@ -149,4 +122,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default SideNav;

@@ -30,6 +30,12 @@ interface ColorType {
   neutral200: string;
   neutral700: string;
   neutral1000: string;
+  primary_dark: string;
+  neutral_dark: string;
+  neutral100_dark: string;
+  neutral200_dark: string;
+  neutral700_dark: string;
+  neutral1000_dark: string;
   [key: string]: string;
 }
 

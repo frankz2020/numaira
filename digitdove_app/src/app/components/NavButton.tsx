@@ -11,13 +11,17 @@ export enum HighlightDirection {
 
 interface NavButtonProps {
   name?: string;
-  highlightDirection: HighlightDirection;
+  highlightDirection?: HighlightDirection;
   selected: boolean;
   onClick: () => void;
   SvgIcon?: React.ComponentType<React.SVGProps<SVGSVGElement>>; // Proper type for SVG component
 }
 
-const HighlightBar = styled.div<{
+const HighlightBar = styled.div.attrs(({ selected, theme }) => ({
+  style: {
+    backgroundColor: selected ? theme.primary : "transparent",
+  },
+}))<{
   highlightDirection: HighlightDirection;
   selected: boolean;
   theme: any;
@@ -25,45 +29,13 @@ const HighlightBar = styled.div<{
   position: absolute;
   transition: all 0.3s ease;
   border-radius: 4px;
-  background-color: ${({ selected, theme }) =>
-    selected ? theme.primary : "transparent"};
-  ${({ highlightDirection }) => {
-    switch (highlightDirection) {
-      case HighlightDirection.Left:
-        return `
-          left: 0;
-          top: 0;
-          bottom: 0;
-          width: 3px;
-        `;
-      case HighlightDirection.Right:
-        return `
-          right: 0;
-          top: 0;
-          bottom: 0;
-          width: 3px;
-        `;
-      case HighlightDirection.Bottom:
-        return `
-          left: 0;
-          right: 0;
-          bottom: 0;
-          height: 3px;
-          padding-top: 4px;
-        `;
-      case HighlightDirection.Top:
-        return `
-          left: 0;
-          right: 0;
-          top: 0;
-          height: 3px;
-        `;
-      default:
-        return "";
-    }
-  }}
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+ 
+  
 `;
-
 const NavButtonContainer = styled.div`
   position: relative;
   display: flex;
@@ -85,7 +57,7 @@ const NavButton: React.FC<NavButtonProps> = ({
     <NavButtonContainer onClick={onClick}>
       {name && (
         <HighlightBar
-          highlightDirection={highlightDirection}
+          // highlightDirection={highlightDirection}
           selected={selected}
           theme={theme}
         />
