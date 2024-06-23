@@ -1,9 +1,44 @@
-import React from 'react'
+"use client";
+import React, { useState } from "react";
+import { TitleText } from "@/app/components/generalStyleComponents";
 
-const page = () => {
-  return (
-    <div>page</div>
-  )
+enum Stages {
+  UploadSource,
+  SelectTemplate,
+  CustomizeTemplate,
+  Review,
+  Publish,
 }
+const SyncSpace = () => {
 
-export default page
+  const [stage, setStage] = useState(Stages.UploadSource);
+  let stageText = "";
+  switch (stage) {
+    case Stages.UploadSource:
+      stageText = "Upload Source";
+      break;
+    case Stages.SelectTemplate:
+      stageText = "Select Template";
+      break;
+    case Stages.CustomizeTemplate:
+      stageText = "Customize Template";
+      break;
+    case Stages.Review:
+      stageText = "Review";
+      break;
+    case Stages.Publish:
+      stageText = "Publish";
+      break;
+    default:
+      stageText = "";
+  }
+
+  return (
+    <div>
+      <TitleText>SyncSpace</TitleText>
+      <div>{stage + 1}/5 {stageText}</div>
+    </div>
+  );
+};
+
+export default SyncSpace;
