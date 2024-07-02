@@ -12,7 +12,7 @@ import SettingSVG from "../assets/setting.svg";
 import BellSVG from "../assets/bell.svg";
 import HelpSVG from "../assets/helpMessage.svg";
 import SearchBar from "./Searchbar";
-import { useRouter,usePathname  } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 export enum ButtonOptions {
   Home,
   Create,
@@ -28,31 +28,23 @@ const SideNav = () => {
   const { theme } = useTheme();
   const { format } = useFormat();
   const [selectedBtn, setSelectedBtn] = useState(ButtonOptions.Home);
-  const pathname = usePathname()
+  const pathname = usePathname();
+
   useEffect(() => {
-    // Do something here...
-    switch (pathname) {
-      case "/home":
-        setSelectedBtn(ButtonOptions.Home);
-        break;
-      case "/create":
-        setSelectedBtn(ButtonOptions.Create);
-        break;
-      case "/browse":
-        setSelectedBtn(ButtonOptions.Browse);
-        break;
-      case "/template":
-        setSelectedBtn(ButtonOptions.Template);
-        break;
-      case "/community":
-        setSelectedBtn(ButtonOptions.Community);
-        break;
-      default:
-        setSelectedBtn(ButtonOptions.Home);
-        break;
+    if (pathname.includes("/home")) {
+      setSelectedBtn(ButtonOptions.Home);
+    } else if (pathname.startsWith("/create")) {
+      setSelectedBtn(ButtonOptions.Create);
+    } else if (pathname.startsWith("/browse")) {
+      setSelectedBtn(ButtonOptions.Browse);
+    } else if (pathname.startsWith("/template")) {
+      setSelectedBtn(ButtonOptions.Template);
+    } else if (pathname.startsWith("/community")) {
+      setSelectedBtn(ButtonOptions.Community);
+    } else {
+      setSelectedBtn(ButtonOptions.Home);
     }
-  }, [pathname])
-  
+  }, [pathname]);
   return (
     <>
       {/* Side Navbar */}

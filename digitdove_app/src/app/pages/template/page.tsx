@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { useTheme } from "@/app/providers/ThemeContext";
 import { useFormat } from "@/app/providers/FormatContext";
 import { TitleText } from "@/app/components/generalStyleComponents";
+import { useRouter,usePathname  } from "next/navigation";
 import {
   StyledPrimaryButton,
   StyledNeutralButton,
@@ -12,12 +13,14 @@ import {
 const Template = () => {
   const { theme } = useTheme();
   const { format } = useFormat();
-
+  const router = useRouter()
   return (
     <div>
       <TitleText> Templates</TitleText>
       <div className="flex justify-end gap-3 px-5 ">
-        <StyledNeutralButton>Create New</StyledNeutralButton>
+        <StyledNeutralButton onClick={() => {
+          router.push("/template/newTemplate")
+        }}>Create New</StyledNeutralButton>
         <StyledPrimaryButton>Upload File</StyledPrimaryButton>
       </div>
 
