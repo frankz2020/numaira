@@ -57,7 +57,7 @@ const SideNav = () => {
     <>
       {/* Side Navbar */}
       <div
-        className="flex flex-col p-1 h-full gap-4 border-r-2 pt-5"
+        className="flex flex-col h-full gap-4 border-r-2 pt-5"
         style={{
           borderColor: theme.neutual200,
           backgroundColor: theme.neutral100,
@@ -78,7 +78,7 @@ const SideNav = () => {
           SvgIcon={HomeSVG}
         />
         <NavButton
-          name="Create"
+          name="SyncSpace"
           highlightDirection={HighlightDirection.Left}
           selected={selectedBtn == ButtonOptions.Create}
           onClick={() => {

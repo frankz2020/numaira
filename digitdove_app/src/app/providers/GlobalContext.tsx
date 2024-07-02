@@ -15,7 +15,7 @@ const GlobalContext = createContext<GlobalContextProps | undefined>(undefined);
 
 export const GlobalProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<string | null>(null);
-  const [loggedIn, setLoggedIn] = useState<Boolean>(false)
+  const [loggedIn, setLoggedIn] = useState<Boolean>(true)
   return (
     <GlobalContext.Provider value={{ user, setUser, loggedIn, setLoggedIn }}>
       {children}

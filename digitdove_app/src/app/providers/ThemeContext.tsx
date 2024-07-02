@@ -19,6 +19,11 @@ interface Theme {
   neutral300: string;
   neutral700: string;
   neutral1000: string;
+  brand: string;
+  brand200: string;
+  brand500: string;
+  brand800: string;
+  brand1000: string;
   // highlightTextColor: string;
   [key: string]: string; // To support additional colors
 }
@@ -48,9 +53,11 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<Theme | null>(null);
 
   useEffect(() => {
-
     const detectColorScheme = () => {
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      if (
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+      ) {
         // Dark mode colors
         setTheme({
           primary: colors.primary,
@@ -60,6 +67,12 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
           neutral1000: colors.neutral1000,
           neutral200: colors.neutral200,
           neutral300: colors.neutral300, // Add the missing property
+
+          brand: colors.brand,
+          brand200: colors.brand200,
+          brand500: colors.brand500,
+          brand800: colors.brand800,
+          brand1000: colors.brand1000,
           // Add other colors as needed
         });
       } else {
@@ -72,6 +85,11 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
           neutral1000: colors.neutral1000,
           neutral200: colors.neutral200,
           neutral300: colors.neutral300, // Add the missing property
+          brand: colors.brand,
+          brand200: colors.brand200,
+          brand500: colors.brand500,
+          brand800: colors.brand800,
+          brand1000: colors.brand1000,
           // Add other colors as needed
         });
       }
@@ -79,13 +97,21 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     detectColorScheme();
 
     // Listen for changes in color scheme
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', detectColorScheme);
-    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', detectColorScheme);
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", detectColorScheme);
+    window
+      .matchMedia("(prefers-color-scheme: light)")
+      .addEventListener("change", detectColorScheme);
 
     // Cleanup event listeners on unmount
     return () => {
-      window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', detectColorScheme);
-      window.matchMedia('(prefers-color-scheme: light)').removeEventListener('change', detectColorScheme);
+      window
+        .matchMedia("(prefers-color-scheme: dark)")
+        .removeEventListener("change", detectColorScheme);
+      window
+        .matchMedia("(prefers-color-scheme: light)")
+        .removeEventListener("change", detectColorScheme);
     };
   }, []);
 
@@ -103,7 +129,10 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       "--background-color",
       theme.neutral
     );
-    document.documentElement.style.setProperty("--text-color", theme.neutral1000);
+    document.documentElement.style.setProperty(
+      "--text-color",
+      theme.neutral1000
+    );
   }
 
   if (!theme) {

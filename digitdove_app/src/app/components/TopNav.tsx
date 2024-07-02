@@ -44,7 +44,7 @@ const TopNav = () => {
             }}
             className="cursor-pointer p-2"
           >
-            DigitDove
+            Numaira
           </div>
           <SearchBar />
           <div className="flex justify-between gap-4 items-center">

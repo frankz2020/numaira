@@ -42,6 +42,7 @@ const NavButtonContainer = styled.div`
   flex-direction: column;
   align-items: center;
   cursor: pointer;
+  width: 100%;
 `;
 
 const NavButton: React.FC<NavButtonProps> = ({
