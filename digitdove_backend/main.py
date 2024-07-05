@@ -13,5 +13,5 @@ if __name__ == '__main__':
         # create database if not exsited
         db.create_all()
     app.register_blueprint(userRoutes, url_prefix='/user')
-    app.run(debug=True)
+    app.run(debug=True, port=8000)
 

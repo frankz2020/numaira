@@ -151,9 +151,8 @@ const ClientLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
         </div>
       ) : (
-        <div>
-          you are not logged in
-          <div className="relative z-10">{children}</div>
+        <div className="h-100">
+          <div className="relative z-10 h-100">{children}</div>
         </div>
       )}
     </>

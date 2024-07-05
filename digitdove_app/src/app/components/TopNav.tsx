@@ -13,6 +13,26 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "../providers/ThemeContext";
 import { useFormat } from "../providers/FormatContext";
 import { ButtonOptions } from "./SideNav";
+import styled from "styled-components";
+
+const AvatarContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const Avatar = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: ${(props) => props.theme.primary};
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-size: 20px;
+  margin-right: 10px;
+`;
+
 const TopNav = () => {
   const router = useRouter();
   const { theme } = useTheme();
@@ -21,55 +41,57 @@ const TopNav = () => {
   const pathname = usePathname();
   return (
     // <div className="h-100">
-      <div
-        className="relative flex justify-between items-center border-b-2"
-        style={{
-          borderColor: theme.neutual200,
-          backgroundColor: theme.neutral100,
-          height:  (parseFloat(format.topNavbarHeight) / 100) * window.innerHeight,
-          minHeight: format.minTopNavbarHeight,
-          maxHeight: format.maxTopNavbarHeight,
-        }}
-      >
-        <div className="flex justify-between items-center w-full h-100 p-2">
-          <div
-            style={{
-              color: theme.primary,
-              fontSize: format.textXL,
-              fontWeight: "bold",
-            }}
-            onClick={() => {
-              console.log("click");
-              router.push("/");
-            }}
-            className="cursor-pointer p-2"
-          >
-            Numaira
-          </div>
-          <SearchBar />
-          <div className="flex justify-between gap-4 items-center">
-            <NavButton
-              highlightDirection={HighlightDirection.Left}
-              selected={selectedBtn == ButtonOptions.Bell}
-              onClick={() => setSelectedBtn(ButtonOptions.Bell)}
-              SvgIcon={BellSVG}
-            />
-            <NavButton
-              highlightDirection={HighlightDirection.Left}
-              selected={selectedBtn == ButtonOptions.Help}
-              onClick={() => setSelectedBtn(ButtonOptions.Help)}
-              SvgIcon={HelpSVG}
-            />
-            <NavButton
-              highlightDirection={HighlightDirection.Left}
-              selected={selectedBtn == ButtonOptions.Setting}
-              onClick={() => setSelectedBtn(ButtonOptions.Setting)}
-              SvgIcon={SettingSVG}
-            />
-            <div>Avatar</div>
-          </div>
+    <div
+      className="relative flex justify-between items-center border-b-2"
+      style={{
+        borderColor: theme.neutual200,
+        backgroundColor: theme.neutral100,
+        height: (parseFloat(format.topNavbarHeight) / 100) * window.innerHeight,
+        minHeight: format.minTopNavbarHeight,
+        maxHeight: format.maxTopNavbarHeight,
+      }}
+    >
+      <div className="flex justify-between items-center w-full h-100 p-2">
+        <div
+          style={{
+            color: theme.primary,
+            fontSize: format.textXL,
+            fontWeight: "bold",
+          }}
+          onClick={() => {
+            console.log("click");
+            router.push("/");
+          }}
+          className="cursor-pointer p-2"
+        >
+          Numaira
+        </div>
+        <SearchBar />
+        <div className="flex justify-between gap-4 items-center">
+          <NavButton
+            highlightDirection={HighlightDirection.Left}
+            selected={selectedBtn == ButtonOptions.Bell}
+            onClick={() => setSelectedBtn(ButtonOptions.Bell)}
+            SvgIcon={BellSVG}
+          />
+          <NavButton
+            highlightDirection={HighlightDirection.Left}
+            selected={selectedBtn == ButtonOptions.Help}
+            onClick={() => setSelectedBtn(ButtonOptions.Help)}
+            SvgIcon={HelpSVG}
+          />
+          <NavButton
+            highlightDirection={HighlightDirection.Left}
+            selected={selectedBtn == ButtonOptions.Setting}
+            onClick={() => setSelectedBtn(ButtonOptions.Setting)}
+            SvgIcon={SettingSVG}
+          />
+           <AvatarContainer>
+          <Avatar theme={theme}>A</Avatar> {/* Replace 'A' with the desired initial or image */}
+        </AvatarContainer>
         </div>
       </div>
+    </div>
     // </div>
   );
 };
