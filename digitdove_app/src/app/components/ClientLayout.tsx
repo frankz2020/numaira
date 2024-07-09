@@ -94,14 +94,14 @@ const ClientLayout = ({ children }: { children: React.ReactNode }) => {
   ]);
 
   useEffect(() => {
+    console.log("client layout loaded, logged in: ", loggedIn)
     if (!loggedIn) {
       router.push("/auth");
+    } else {
+      router.push("/");
     }
   }, [loggedIn]);
 
-  useEffect(() => {
-    console.log("10  percent height:", (parseFloat(topNavbarHeight) / 100) * window.innerHeight)
-  }, []);
   return (
     <>
       {loggedIn ? (

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import SearchBar from "./Searchbar";
 import NavButton, { HighlightDirection } from "./NavButton";
 import HomeSVG from "../assets/home.svg";
@@ -14,6 +14,7 @@ import { useTheme } from "../providers/ThemeContext";
 import { useFormat } from "../providers/FormatContext";
 import { ButtonOptions } from "./SideNav";
 import styled from "styled-components";
+import { useGlobalContext } from "../providers/GlobalContext";
 
 const AvatarContainer = styled.div`
   display: flex;
@@ -31,14 +32,22 @@ const Avatar = styled.div`
   color: #fff;
   font-size: 20px;
   margin-right: 10px;
+  cursor: pointer;
 `;
 
 const TopNav = () => {
   const router = useRouter();
   const { theme } = useTheme();
   const { format } = useFormat();
+  const { backendUrl, setLoggedIn, loggedIn } = useGlobalContext();
   const [selectedBtn, setSelectedBtn] = useState(ButtonOptions.Home);
   const pathname = usePathname();
+
+  useEffect(() => {
+    if (!loggedIn) {
+      router.push("/auth");
+    }
+  }, [loggedIn]);
   return (
     // <div className="h-100">
     <div
@@ -86,9 +95,45 @@ const TopNav = () => {
             onClick={() => setSelectedBtn(ButtonOptions.Setting)}
             SvgIcon={SettingSVG}
           />
-           <AvatarContainer>
-          <Avatar theme={theme}>A</Avatar> {/* Replace 'A' with the desired initial or image */}
-        </AvatarContainer>
+          <AvatarContainer>
+            <Avatar
+              theme={theme}
+              onClick={async () => {
+                try {
+                  const response = await fetch(backendUrl + "/user/logout", {
+                    method: "GET",
+                    credentials: "include",
+                  });
+
+                  if (!response.ok) {
+                    throw new Error("Error logging out, check your internet");
+                  }
+
+                  const data = await response.json();
+                  console.log("data:", data);
+                  setLoggedIn(false);
+                  router.push("/home");
+
+                  const aliveResponse = await fetch(
+                    backendUrl + "/user/current_user",
+                    {
+                      method: "GET",
+                      credentials: "include",
+                    }
+                  );
+
+                  aliveResponse.json().then((data: any) => {
+                    console.log("alive:", data);
+                  });
+                } catch (error) {
+                  console.log(error);
+                }
+              }}
+            >
+              A
+            </Avatar>{" "}
+            {/* Replace 'A' with the desired initial or image */}
+          </AvatarContainer>
         </div>
       </div>
     </div>
