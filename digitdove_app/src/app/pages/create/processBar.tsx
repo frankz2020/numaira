@@ -13,7 +13,6 @@ const ProcessBar = (props: {
   const stages = [
     Stages.UploadSource,
     Stages.SelectTemplate,
-    Stages.AssociateAndSync,
     Stages.Review
   ];
 
@@ -54,13 +53,10 @@ const ProcessBarBrick = (props: {
       stageText = "Upload Source";
       break;
     case Stages.SelectTemplate:
-      stageText = "Select Template";
-      break;
-    case Stages.AssociateAndSync:
-      stageText = "Customize Template";
+      stageText = "Choose Output";
       break;
     case Stages.Review:
-      stageText = "Review";
+      stageText = "Review & Export";
       break;
     default:
       stageText = "";

@@ -116,7 +116,10 @@ const SyncSpace = () => {
   return (
     <div className="h-100">
       <TitleText>SyncSpace</TitleText>
+      <div className="flex justify-center w-100">
       <ProcessBar stage={stage} setStage={setStage} />
+      </div>
+      
       <section
         className="mt-2 "
         style={{ height: "60vh", overflowX: "scroll" }}
