@@ -94,7 +94,7 @@ const SyncSpace = () => {
   const removeFile = (index: number) => {
     const newList = fileList.filter((file, i) => i !== index);
     setFileList(newList);
-  }
+  };
 
   let stageText = "";
   switch (stage) {
@@ -116,10 +116,10 @@ const SyncSpace = () => {
   return (
     <div className="h-100">
       <TitleText>SyncSpace</TitleText>
-      <div className="flex justify-center w-100">
-      <ProcessBar stage={stage} setStage={setStage} />
+      <div className="flex justify-center w-100 me-3">
+        <ProcessBar stage={stage} setStage={setStage} />
       </div>
-      
+
       <section
         className="mt-2 "
         style={{ height: "60vh", overflowX: "scroll" }}
@@ -139,14 +139,27 @@ const SyncSpace = () => {
               <>
                 {fileList.map((file, index) => (
                   <FileDiv theme={theme} key={index} className={"p-2 m-2"}>
-                    <div className="p-2" style={{backgroundColor: theme.neutral300}}>
-                      <div>
-                      {getPlaceHolder(file.name)}
-                      </div>
-                      
-                      <div style={{backgroundColor: theme.neutral100}} className={'p-4 flex justify-between'}>
-                        <div className="item-center">{index} {file.name}</div>
-                        <div className="p-2 cursor-pointer" onClick={() => {removeFile(index)}}><CloseIcon/></div>
+                    <div
+                      className="p-2"
+                      style={{ backgroundColor: theme.neutral300 }}
+                    >
+                      <div>{getPlaceHolder(file.name)}</div>
+
+                      <div
+                        style={{ backgroundColor: theme.neutral100 }}
+                        className={"p-4 flex justify-between"}
+                      >
+                        <div className="item-center">
+                          {index} {file.name}
+                        </div>
+                        <div
+                          className="p-2 cursor-pointer"
+                          onClick={() => {
+                            removeFile(index);
+                          }}
+                        >
+                          <CloseIcon />
+                        </div>
                       </div>
                     </div>
                   </FileDiv>

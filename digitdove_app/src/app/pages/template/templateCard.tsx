@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { useTheme } from "@/app/providers/ThemeContext";
 import { useFormat } from "@/app/providers/FormatContext";
 import MoreSVG from "../../assets/moreVertical.svg";
+import NumairaFrame from "../../assets/placeholder/numairaFrame.svg";
 interface TemplateCardProps {
   image?: string;
   title: string;
@@ -16,12 +17,11 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
   description,
 }) => {
   const CardContainer = styled.div`
-    width: 15%;
-    max-width: 230px;
-    min-width: 250px;
-    background-color: ${({ theme }) => `${theme.neutual100}`};
-    border-radius: ${({ format }) => format.roundmd};
-    padding: 8px;
+    min-width: 230px;
+    height: 250px;
+    align-items: center;
+    border-radius: ${(props) => props.format.roundmd};
+    background-color: ${(props) => props.theme.neutral100} !important;
   `;
 
   const CardImage = styled.img`
@@ -43,23 +43,22 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
   const { theme } = useTheme();
   const { format } = useFormat();
   return (
-    <CardContainer
-      theme={theme}
-      format={format}
-      style={{ backgroundColor: theme.neutral200 }}
-    >
-      {image != undefined ? (
-        <CardImage src={image} alt={title} />
-      ) : (
-        <CardImage src="https://via.placeholder.com/200" alt={title} />
-      )}
+    <CardContainer theme={theme} format={format}>
+      <div className="p-2" style={{ backgroundColor: theme.neutral300 }}>
+        <div>
+          <NumairaFrame />
+        </div>
 
-    <div className="flex justify-between mt-2 align-center">
-    <CardTitle>{title}</CardTitle>
-      <MoreSVG/>
-    </div>
-     
-      <CardDescription>{description}</CardDescription>
+        <div
+          style={{ backgroundColor: theme.neutral100 }}
+          className={"p-4 flex justify-between"}
+        >
+          <div className="item-center">{title}</div>
+          <div>
+            <MoreSVG />
+          </div>
+        </div>
+      </div>
     </CardContainer>
   );
 };

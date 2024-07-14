@@ -20,7 +20,7 @@ const ProcessBar = (props: {
     setSelected(props.stage)
   }, [props.stage])
   return (
-    <div className="flex">
+    <div className="flex w-100 grow">
       {stages.map((stage: Stages) => {
         return (
           <ProcessBarBrick
@@ -64,7 +64,7 @@ const ProcessBarBrick = (props: {
 
   const StyledTopBar = styled.div`
     background-color: ${(props) => props.theme.neutral100};
-    min-width: 270px;
+    flex-grow: 1;
     border-bottom: 2px solid
       ${(props) =>
         props.selected ? props.theme.neutral1000 : props.theme.neutral100};
