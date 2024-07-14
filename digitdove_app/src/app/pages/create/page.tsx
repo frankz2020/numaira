@@ -6,7 +6,10 @@ import ProcessBar from "./processBar";
 import { useTheme } from "@/app/providers/ThemeContext";
 import { useFormat } from "@/app/providers/FormatContext";
 import styled from "styled-components";
-
+import PDFimage from "../../assets/placeholder/pdfFrame.svg";
+import XLSXimage from "../../assets/placeholder/xlsxFrame.svg";
+import DOCXimage from "../../assets/placeholder/docxFrame.svg";
+import CloseIcon from "../../assets/close.svg";
 export enum Stages {
   UploadSource,
   SelectTemplate,
@@ -20,6 +23,7 @@ const FileInput = styled.input`
 
 const UploadContainer = styled.div`
   min-height: 450px;
+  min-width: 600px;
   border: 2px dotted ${(props) => props.theme.neutral700};
   border-radius: ${(props) => props.format.roundmd};
   display: flex;
@@ -49,16 +53,24 @@ const Avatar = styled.div`
   margin-right: 10px;
 `;
 
+const FileDiv = styled.div`
+  min-width: 450px;
+  height: auto;
+  align-items: center;
+  border-radius: 8px;
+  background-color: ${(props) => props.theme.neutral100} !important;
+`;
+
 const SyncSpace = () => {
   const [stage, setStage] = useState(Stages.UploadSource);
-  const [file, setFile] = useState<File | null>(null);
+  const [fileList, setFileList] = useState<File[]>([]);
   const { theme } = useTheme();
   const { format } = useFormat();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files ? e.target.files[0] : null;
     if (selectedFile != null && selectedFile.type === "application/pdf") {
-      setFile(selectedFile);
+      setFileList([...fileList, selectedFile]);
     }
   };
 
@@ -66,6 +78,23 @@ const SyncSpace = () => {
     const fileInput = document.getElementById("fileInput") as HTMLInputElement;
     fileInput.click();
   };
+
+  const getPlaceHolder = (name: string) => {
+    if (name.split(".").pop() === "pdf") {
+      return <PDFimage />;
+    }
+    if (name.split(".").pop() === "docx") {
+      return <DOCXimage />;
+    }
+    if (name.split(".").pop() === "xlsx") {
+      return <XLSXimage />;
+    }
+  };
+
+  const removeFile = (index: number) => {
+    const newList = fileList.filter((file, i) => i !== index);
+    setFileList(newList);
+  }
 
   let stageText = "";
   switch (stage) {
@@ -84,28 +113,48 @@ const SyncSpace = () => {
     default:
       stageText = "";
   }
-
   return (
     <div className="h-100">
       <TitleText>SyncSpace</TitleText>
       <ProcessBar stage={stage} setStage={setStage} />
-      <section className="mt-2" style={{ height: "60vh" }}>
+      <section
+        className="mt-2 "
+        style={{ height: "60vh", overflowX: "scroll" }}
+      >
         {stage === Stages.UploadSource && (
-          <UploadContainer theme={theme} format={format}>
+          <div
+            className="flex overflow-x-scroll flex-nowrap w-100"
+            style={{ overflowX: "scroll" }}
+          >
             <FileInput
               id="fileInput"
               type="file"
               accept="application/pdf"
               onChange={handleFileChange}
             />
-            {file ? (
-              <FileInfo>
-                <Avatar theme={theme}>
-                  {file.name.charAt(0).toUpperCase()}
-                </Avatar>
-                <span>{file.name}</span>
-              </FileInfo>
-            ) : (
+            {fileList.length > 0 && (
+              <>
+                {fileList.map((file, index) => (
+                  <FileDiv theme={theme} key={index} className={"p-2 m-2"}>
+                    <div className="p-2" style={{backgroundColor: theme.neutral300}}>
+                      <div>
+                      {getPlaceHolder(file.name)}
+                      </div>
+                      
+                      <div style={{backgroundColor: theme.neutral100}} className={'p-4 flex justify-between'}>
+                        <div className="item-center">{index} {file.name}</div>
+                        <div className="p-2 cursor-pointer" onClick={() => {removeFile(index)}}><CloseIcon/></div>
+                      </div>
+                    </div>
+                  </FileDiv>
+                ))}
+              </>
+            )}
+            <UploadContainer
+              theme={theme}
+              format={format}
+              className=" flex-shrink-0 grow"
+            >
               <div className="flex flex-col justify-center">
                 <div className="font-bold">
                   Choose a file or drag & drop it here
@@ -125,8 +174,8 @@ const SyncSpace = () => {
                   Browse File
                 </button>
               </div>
-            )}
-          </UploadContainer>
+            </UploadContainer>
+          </div>
         )}
         {stage === Stages.SelectTemplate && <>Choose output template</>}
         {stage === Stages.AssociateAndSync && <>AssociateAndSync</>}
@@ -139,7 +188,7 @@ const SyncSpace = () => {
             <button
               className="px-3 py-2 m-4"
               onClick={() => {
-                  setStage(stage - 1);
+                setStage(stage - 1);
               }}
               style={{
                 backgroundColor: theme.brand,

@@ -100,9 +100,10 @@ const Login = () => {
   };
 
   const handleSignup = async () => {
+    console.log("sign up")
     if (validateForm()) {
       try {
-        const response = await fetch(backendUrl + "/user/signup", {
+        const response = await fetch(backendUrl + "/user/register", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -112,6 +113,8 @@ const Login = () => {
 
         if (!response.ok) {
           throw new Error("Signup failed");
+        } else {
+          handleLogin();
         }
 
         const data = await response.json();
@@ -127,8 +130,14 @@ const Login = () => {
 
   return (
     <div className="flex justify-center w-100 h-100">
-      <div className="flex justify-center flex-col" style={{ transform: loginView ? "translateY(0)" : "translateY(-100vh)", transition: "transform 0.5s ease-in-out" }}
->
+      <div
+        className="flex justify-center flex-col"
+        style={{
+          transform: loginView ? "translateY(0)" : "translateY(-100vh)",
+          transition: "transform 0.5s ease-in-out",
+        }}
+      >
+        {/* sign in form  */}
         <div
           className="flex justify-center flex-col p-4 h-100"
           style={{
@@ -211,6 +220,7 @@ const Login = () => {
           </div>
         </div>
 
+        {/* sign up form  */}
         <div
           className="flex justify-center flex-col p-4 h-100"
           style={{
@@ -284,9 +294,9 @@ const Login = () => {
               backgroundColor: theme.brand500,
               borderRadius: format.roundmd,
             }}
-            onClick={handleLogin}
+            onClick={handleSignup}
           >
-            Log in
+            Sign Up
           </button>
 
           <div className="flex">
