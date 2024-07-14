@@ -3,6 +3,7 @@ import { useFormat } from "@/app/providers/FormatContext";
 import { useTheme } from "@/app/providers/ThemeContext";
 import React, { useState } from "react";
 import Spreadsheet, { CellBase, Matrix } from "react-spreadsheet";
+import DocumentEditor from "./documentEditor";
 
 interface Cell extends CellBase {
   value: string | number | boolean | null;
@@ -78,6 +79,8 @@ const NewTemplate = () => {
       </div>
       <h2>Excel Editor</h2>
       <Spreadsheet data={data} onChange={setData} />
+
+      <DocumentEditor/>
     </div>
   );
 };

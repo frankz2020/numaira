@@ -65,14 +65,16 @@ const ProcessBarBrick = (props: {
   const StyledTopBar = styled.div`
     background-color: ${(props) => props.theme.neutral100};
     flex-grow: 1;
-    border-bottom: 2px solid
+    border-bottom: 3px solid
       ${(props) =>
-        props.selected ? props.theme.neutral1000 : props.theme.neutral100};
+        props.selected ? props.theme.brand500 : props.theme.neutral100};
     transition: all 0.3s ease;
     padding: 0.5rem 1.25rem;
     cursor: pointer;
     display: flex;
     justify-content: center;
+    font-weight: semibold;
+    color: ${(props) => props.theme.brand500}
   `;
 
   return (
