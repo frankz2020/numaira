@@ -40,7 +40,7 @@ const NewTemplate = () => {
         borderRadius: "5px",
       }}
     >
-      <div style={{ marginTop: "20px" }}>
+      {/* <div style={{ marginTop: "20px" }}>
         <button
         className="p-2"
           onClick={addRow}
@@ -78,9 +78,9 @@ const NewTemplate = () => {
         </button>
       </div>
       <h2>Excel Editor</h2>
-      <Spreadsheet data={data} onChange={setData} />
+      <Spreadsheet data={data} onChange={setData} /> */}
 
-      <DocumentEditor/>
+      <DocumentEditor />
     </div>
   );
 };

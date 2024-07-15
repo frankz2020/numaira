@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { DndContext, closestCenter, DragEndEvent } from "@dnd-kit/core";
+import {
+  DndContext,
+  closestCenter,
+  DragEndEvent,
+  useSensors,
+  DragOverlay,
+  DragStartEvent,
+} from "@dnd-kit/core";
+
 import {
   arrayMove,
   SortableContext,
@@ -7,7 +15,11 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-
+import DraggableTextBlock from "./draggableText";
+import { MouseSensor, SmartPointerSensor } from "./DndSensors";
+import DragPlaceholder from "../../../assets/placeholder/dragPlaceholder.png";
+import { useTheme } from "@/app/providers/ThemeContext";
+import TemplateType from "../templateType";
 const ItemTypes = {
   TEXT_BLOCK: "TEXT_BLOCK",
 };
@@ -16,96 +28,107 @@ const ItemTypes = {
 interface TextBlockProps {
   id: string;
   text: string;
-}
-
-interface DraggableTextBlockProps {
-  id: string;
-  text: string;
-  onTextChange: (id: string, newText: string) => void;
+  deltaString: string;
 }
 
 interface DocumentEditorProps {}
 
-// Draggable Text Block Component
-const DraggableTextBlock: React.FC<DraggableTextBlockProps> = ({
-    id,
-    text,
-    onTextChange,
-  }) => {
-    const { attributes, listeners, setNodeRef, transform, transition } =
-      useSortable({ id });
-    const style = {
-      transform: CSS.Transform.toString(transform),
-      transition,
-      padding: "8px",
-      border: "1px solid gray",
-      margin: "4px",
-      backgroundColor: "white",
-      cursor: "move",
-    };
-  
-    return (
-      <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-        <textarea
-          value={text}
-          onClick={(e) => e.stopPropagation()}
-          onMouseDown={(e) => e.stopPropagation()}
-          onTouchStart={(e) => e.stopPropagation()}
-          onChange={(e) => onTextChange(id, e.target.value)}
-          style={{
-            width: "100%",
-            height: "100%",
-            resize: "none",
-            border: "none",
-            outline: "none",
-            borderRadius: "4px",
-          }}
-        />
-      </div>
-    );
-  };
-  
-
 // Document Editor Component
 const DocumentEditor: React.FC<DocumentEditorProps> = () => {
+  const { theme } = useTheme();
   const [components, setComponents] = useState<TextBlockProps[]>([]);
   const [title, setTitle] = useState<string>("Document Title");
-
+  const [activeId, setActiveId] = useState<number | null>(null);
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (active.id !== over?.id) {
       setComponents((items) => {
         const oldIndex = items.findIndex((item) => item.id === active.id);
         const newIndex = items.findIndex((item) => item.id === over?.id);
+        setActiveId(null);
         return arrayMove(items, oldIndex, newIndex);
       });
     }
+  };
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    setActiveId(active.id as number);
   };
 
   const addTextBlock = () => {
     const newTextBlock: TextBlockProps = {
       id: `text-block-${components.length + 1}`,
       text: "New Text Block",
+      deltaString: "",
     };
     setComponents((prevComponents) => [...prevComponents, newTextBlock]);
   };
 
-  const handleTextChange = (id: string, newText: string) => {
+  const handleTextChange = (
+    id: string,
+    newText: string,
+    deltaString: string
+  ) => {
     setComponents((prevComponents) =>
       prevComponents.map((component) =>
-        component.id === id ? { ...component, text: newText } : component
+        component.id === id
+          ? { ...component, text: newText, deltaString: deltaString }
+          : component
       )
     );
   };
 
+  const handleSaveTemplate = () => {
+    const lastEdited = new Date().toLocaleString("en-US", {
+      minute: "numeric",
+    });
+    const name = title;
+    const paragraphs = components.map((component) => {
+      return component.deltaString;
+    });
+    console.log("saving: ");
+    const newTemplateData: TemplateType = {
+      name: name,
+      lastEdited: lastEdited.toString(),
+      paragraphs: paragraphs,
+    };
+  };
+
+  const sensors = useSensors({
+    sensor: MouseSensor,
+    options: {},
+  });
+
   return (
     <div style={{ padding: "16px" }}>
-      <button
-        onClick={addTextBlock}
-        style={{ marginBottom: "16px", padding: "8px 16px", cursor: "pointer" }}
-      >
-        Add Text Block
-      </button>
+      <div className="flex justify-between ">
+        <button
+          onClick={addTextBlock}
+          className="cursor-pointer px-3 py-2 rounded"
+          style={{
+            marginBottom: "16px",
+            cursor: "pointer",
+            backgroundColor: theme.brand500,
+            color: theme.neutral,
+          }}
+        >
+          Add Text Block
+        </button>
+        <button
+          className="cursor-pointer px-3 py-2 rounded"
+          style={{
+            marginBottom: "16px",
+            cursor: "pointer",
+            backgroundColor: theme.brand500,
+            color: theme.neutral,
+          }}
+          onClick={handleSaveTemplate}
+        >
+          Save Template
+        </button>
+      </div>
+
       <input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
@@ -117,7 +140,12 @@ const DocumentEditor: React.FC<DocumentEditorProps> = () => {
           boxSizing: "border-box",
         }}
       />
-      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <DndContext
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+        onDragStart={handleDragStart}
+        sensors={sensors}
+      >
         <SortableContext
           items={components}
           strategy={verticalListSortingStrategy}
@@ -130,15 +158,26 @@ const DocumentEditor: React.FC<DocumentEditorProps> = () => {
             }}
           >
             {components.map((component) => (
-              <DraggableTextBlock
-                key={component.id}
-                id={component.id}
-                text={component.text}
-                onTextChange={handleTextChange}
-              />
+              <>
+                {activeId != Number(component.id) && (
+                  <DraggableTextBlock
+                    key={component.id}
+                    id={component.id}
+                    text={component.text}
+                    onTextChange={handleTextChange}
+                  />
+                )}
+              </>
             ))}
           </div>
         </SortableContext>
+        <DragOverlay>
+          <img
+            src={DragPlaceholder.src}
+            alt="placeholder"
+            style={{ width: "50px", height: "50px" }}
+          />
+        </DragOverlay>
       </DndContext>
     </div>
   );
