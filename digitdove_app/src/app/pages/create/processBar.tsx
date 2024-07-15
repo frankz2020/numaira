@@ -10,15 +10,11 @@ const ProcessBar = (props: {
   const { theme } = useTheme();
   const { format } = useFormat();
   const [selected, setSelected] = useState(Stages.UploadSource);
-  const stages = [
-    Stages.UploadSource,
-    Stages.SelectTemplate,
-    Stages.Review
-  ];
+  const stages = [Stages.UploadSource, Stages.SelectTemplate, Stages.Review];
 
   useEffect(() => {
-    setSelected(props.stage)
-  }, [props.stage])
+    setSelected(props.stage);
+  }, [props.stage]);
   return (
     <div className="flex w-100 grow">
       {stages.map((stage: Stages) => {
@@ -30,7 +26,7 @@ const ProcessBar = (props: {
             onPress={() => {
               console.log("pressed");
               setSelected(stage);
-              props.setStage(stage)
+              props.setStage(stage);
             }}
           />
         );
@@ -39,6 +35,26 @@ const ProcessBar = (props: {
   );
 };
 
+interface UploadContainerProps {
+  theme?: any;
+  format?: any;
+  selected: any;
+}
+
+const StyledTopBar = styled.div<UploadContainerProps>`
+  background-color: ${(props) => props.theme.neutral100};
+  flex-grow: 1;
+  border-bottom: 3px solid
+    ${(props) =>
+      props.selected ? props.theme.brand500 : props.theme.neutral100};
+  transition: all 0.3s ease;
+  padding: 0.5rem 1.25rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  font-weight: semibold;
+  color: ${(props) => props.theme.brand500};
+`;
 const ProcessBarBrick = (props: {
   stage: Stages;
   onPress: () => void;
@@ -61,21 +77,6 @@ const ProcessBarBrick = (props: {
     default:
       stageText = "";
   }
-
-  const StyledTopBar = styled.div`
-    background-color: ${(props) => props.theme.neutral100};
-    flex-grow: 1;
-    border-bottom: 3px solid
-      ${(props) =>
-        props.selected ? props.theme.brand500 : props.theme.neutral100};
-    transition: all 0.3s ease;
-    padding: 0.5rem 1.25rem;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    font-weight: semibold;
-    color: ${(props) => props.theme.brand500}
-  `;
 
   return (
     <>

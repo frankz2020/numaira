@@ -42,7 +42,7 @@ def create_template():
         user_id=current_user.id,
         names=data['names'],
         paragraph=data['paragraph'],
-        last_edited=datetime.utcnow()
+        last_edited=datetime.now()
     )
     db.session.add(new_template)
     db.session.commit()

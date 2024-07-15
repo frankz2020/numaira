@@ -1,5 +1,6 @@
 from datetime import datetime
-from sqlalchemy.dialects.postgresql import ARRAY
+
+from sqlalchemy.dialects.sqlite import JSON
 
 from config import db
 
@@ -8,8 +9,8 @@ class Template(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     name = db.Column(db.String(255), nullable=False)
-    last_edited = db.Column(db.DateTime, default=datetime.now(datetime.UTC))
-    paragraph = db.Column(ARRAY(db.String), nullable=False)
+    last_edited = db.Column(db.DateTime, default=datetime.now())
+    paragraph = db.Column(JSON, nullable=False)
 
     user = db.relationship("User", backref=db.backref("templates", lazy=True))
 

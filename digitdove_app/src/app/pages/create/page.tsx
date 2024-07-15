@@ -21,20 +21,6 @@ const FileInput = styled.input`
   display: none;
 `;
 
-const UploadContainer = styled.div`
-  min-height: 450px;
-  min-width: 600px;
-  border: 2px dotted ${(props) => props.theme.neutral700};
-  border-radius: ${(props) => props.format.roundmd};
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 1rem;
-  margin-right: 1rem;
-  padding: 20px;
-  text-align: center;
-`;
-
 const FileInfo = styled.div`
   display: flex;
   align-items: center;
@@ -61,7 +47,28 @@ const FileDiv = styled.div`
   background-color: ${(props) => props.theme.neutral100} !important;
 `;
 
+interface UploadContainerProps {
+  theme: any;
+  format: any;
+}
+
+const UploadContainer = styled.div<UploadContainerProps>`
+  min-height: 450px;
+  min-width: 600px;
+  border: 2px dotted ${(props) => props.theme.neutral700};
+  border-radius: ${(props) => props.format.roundmd};
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1rem;
+  margin-right: 1rem;
+  padding: 20px;
+  text-align: center;
+`;
+
 const SyncSpace = () => {
+
+
   const [stage, setStage] = useState(Stages.UploadSource);
   const [fileList, setFileList] = useState<File[]>([]);
   const { theme } = useTheme();
