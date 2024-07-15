@@ -12,3 +12,19 @@ instance/
 .env
 .env.*
 
+
+# Flask-Migrate
+migrations/
+
+# SQLite database files
+*.db
+*.sqlite3
+
+# VSCode
+.vscode/
+
+# PyCharm
+.idea/
+
+# MacOS
+.DS_Store
