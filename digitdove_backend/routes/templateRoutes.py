@@ -3,7 +3,7 @@ from flask import request, jsonify, Blueprint
 from config import app, db
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from models.Template import Template
-
+from utils.sqlLiteArrayToText import sqlLite_convertArrayToText
 
 templateRoutes = Blueprint('templateRoutes', __name__)
 
@@ -34,14 +34,16 @@ def get_template(template_id):
 @templateRoutes.route('/createTemplate', methods=['POST'])
 @login_required
 def create_template():
+    print("hit create tempalte endpoint")
     data = request.get_json()
-    if not data or 'names' not in data or 'paragraph' not in data:
-        return jsonify({'message': 'Names and paragraph are required'}), 400
+    print(data)
+    if not data or 'name' not in data or 'paragraphs' not in data:
+        return jsonify({'message': 'Name and paragraphs are required'}), 400
     
     new_template = Template(
         user_id=current_user.id,
-        names=data['names'],
-        paragraph=data['paragraph'],
+        name=data['name'],
+        paragraphs=sqlLite_convertArrayToText(data['paragraphs']),
         last_edited=datetime.now()
     )
     db.session.add(new_template)
@@ -49,7 +51,7 @@ def create_template():
     
     brief_info = {
         'id': new_template.id,
-        'names': new_template.names,
+        'name': new_template.name,
         'last_edited': new_template.last_edited.isoformat()
     }
     return jsonify(brief_info), 201

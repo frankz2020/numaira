@@ -1,6 +1,7 @@
 import os
 from flask import Flask 
 from flask_cors import CORS
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from dotenv import load_dotenv
@@ -25,6 +26,7 @@ app.config.update(
 )
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 login_manager = LoginManager()
 login_manager.init_app(app)

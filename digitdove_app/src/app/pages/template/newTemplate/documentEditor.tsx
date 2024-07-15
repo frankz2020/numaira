@@ -20,6 +20,7 @@ import { MouseSensor, SmartPointerSensor } from "./DndSensors";
 import DragPlaceholder from "../../../assets/placeholder/dragPlaceholder.png";
 import { useTheme } from "@/app/providers/ThemeContext";
 import TemplateType from "../templateType";
+import { useGlobalContext } from "@/app/providers/GlobalContext";
 const ItemTypes = {
   TEXT_BLOCK: "TEXT_BLOCK",
 };
@@ -39,6 +40,8 @@ const DocumentEditor: React.FC<DocumentEditorProps> = () => {
   const [components, setComponents] = useState<TextBlockProps[]>([]);
   const [title, setTitle] = useState<string>("Document Title");
   const [activeId, setActiveId] = useState<number | null>(null);
+
+  const { backendUrl } = useGlobalContext();
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (active.id !== over?.id) {
@@ -80,19 +83,38 @@ const DocumentEditor: React.FC<DocumentEditorProps> = () => {
   };
 
   const handleSaveTemplate = () => {
-    const lastEdited = new Date().toLocaleString("en-US", {
-      minute: "numeric",
-    });
+    const lastEdited = new Date().toLocaleString();
     const name = title;
     const paragraphs = components.map((component) => {
       return component.deltaString;
     });
-    console.log("saving: ");
-    const newTemplateData: TemplateType = {
-      name: name,
-      lastEdited: lastEdited.toString(),
-      paragraphs: paragraphs,
-    };
+
+    if (paragraphs.length < 1) {
+      console.log("invalid document");
+      return;
+    }
+
+    console.log("saving: ", name, paragraphs, lastEdited);
+
+    fetch(`${backendUrl}/template/createTemplate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        credentials: "include",
+      },
+      body: JSON.stringify({
+        name: name,
+        last_edited: lastEdited,
+        paragraphs: paragraphs,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Success:", data);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
   };
 
   const sensors = useSensors({
