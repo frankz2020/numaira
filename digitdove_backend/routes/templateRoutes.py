@@ -15,7 +15,7 @@ def get_templates():
     summarized_templates = [
         {
             'id': template.id,
-            'names': template.names,
+            'name': template.name,
             'last_edited': template.last_edited.isoformat()
         } for template in templates
     ]
@@ -81,8 +81,8 @@ def update_template_by_user(template_id):
     if not template:
         return jsonify({'message': 'Template not found or you do not have permission to update this template'}), 404
     
-    if 'names' in data:
-        template.names = data['names']
+    if 'name' in data:
+        template.name = data['name']
     if 'paragraph' in data:
         template.paragraph = data['paragraph']
     template.last_edited = datetime.now(datetime.UTC)

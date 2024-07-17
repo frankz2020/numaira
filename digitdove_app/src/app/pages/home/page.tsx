@@ -30,9 +30,9 @@ const Home = () => {
           Recent files: 
           </div>
          <div className="flex pb-3 gap-4">
-         <TemplateCard title="Test" description="This is a test card"/>
-         <TemplateCard title="Test" description="This is a test card"/>
-         <TemplateCard title="Test" description="This is a test card"/>
+         <TemplateCard templateId="-1" title="Test" description="This is a test card"/>
+         <TemplateCard templateId="-1" title="Test" description="This is a test card"/>
+         <TemplateCard templateId="-1" title="Test" description="This is a test card"/>
          </div>
          
         </div>

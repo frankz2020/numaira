@@ -21,7 +21,7 @@ class Template(db.Model):
         return {
             "id": self.id,
             "user_id": self.user_id,
-            "name": self.names,
+            "name": self.name,
             "last_edited": self.last_edited.isoformat(),
-            "paragraphs": sqlLite_reverseTextToArray(self.paragraph),  # Convert comma-separated string to list
+            "paragraphs": sqlLite_reverseTextToArray(self.paragraphs),  # Convert comma-separated string to list
         }

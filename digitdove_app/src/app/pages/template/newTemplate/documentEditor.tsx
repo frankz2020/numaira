@@ -100,8 +100,8 @@ const DocumentEditor: React.FC<DocumentEditorProps> = () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        credentials: "include",
       },
+      credentials: "include",
       body: JSON.stringify({
         name: name,
         last_edited: lastEdited,
