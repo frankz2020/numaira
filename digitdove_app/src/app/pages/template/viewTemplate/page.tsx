@@ -6,6 +6,8 @@ import Quill from "quill";
 import { useGlobalContext } from "@/app/providers/GlobalContext";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import TemplateType from "../templateType";
+import DraggableDivider from "../newTemplate/draggableDivider";
+
 type ViewTemplateProps = {};
 
 const ViewTemplate = (props: ViewTemplateProps) => {
@@ -13,6 +15,7 @@ const ViewTemplate = (props: ViewTemplateProps) => {
   const searchParams = useSearchParams();
   const templateId = searchParams.get("id");
   const [template, setTemplate] = useState<TemplateType | null>(null);
+  const router = useRouter()
   const handleOpenTemplate = async () => {
     console.log("open tempalte");
     try {
@@ -45,19 +48,39 @@ const ViewTemplate = (props: ViewTemplateProps) => {
         <div>Loading...</div>
       ) : (
         <>
-          <div>{template.name}</div>
-          <p>Last edited: {template.last_edited}</p>
+          <button onClick={() => {router.push('/template')}}>Back</button>
+          <button onClick={() => {router.push('/template')}}>Edit</button>
+          <div className="flex justify-start gap-4">
+            <div className="p-3 text-xl bold">{template.name}</div>
+            <p className="mt-3 text-sm  ">
+              Last edited: {template.last_edited}
+            </p>
+          </div>
 
           {template.paragraphs.map((paragraph: string, index: number) => {
-            const delta = JSON.parse(paragraph);
+            let delta = "";
+            let isDelta = false;
+            if (paragraph !== "divider") {
+              delta = JSON.parse(paragraph);
+              isDelta = true;
+            }
+
             return (
-              <ReactQuill
-                key={index}
-                value={delta}
-                readOnly={true}
-                theme="bubble" // Use a theme that doesn't show the toolbar
-                modules={{ toolbar: false }} // Disable the toolbar
-              />
+              <>
+                {isDelta ? (
+                  <ReactQuill
+                    key={index}
+                    value={delta}
+                    readOnly={true}
+                    theme="bubble" // Use a theme that doesn't show the toolbar
+                    modules={{ toolbar: false }} // Disable the toolbar
+                  />
+                ) : (
+                  <>
+                    <hr />
+                  </>
+                )}
+              </>
             );
           })}
         </>

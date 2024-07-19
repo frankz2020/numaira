@@ -21,15 +21,24 @@ import DragPlaceholder from "../../../assets/placeholder/dragPlaceholder.png";
 import { useTheme } from "@/app/providers/ThemeContext";
 import TemplateType from "../templateType";
 import { useGlobalContext } from "@/app/providers/GlobalContext";
-const ItemTypes = {
-  TEXT_BLOCK: "TEXT_BLOCK",
+import draggableDivider from "./draggableDivider";
+import DraggableDivider from "./draggableDivider";
+export enum EditorItemTypes {
+  TEXT_BLOCK,
+  DIVIDER,
 };
 
 // Define TypeScript types for the components
-interface TextBlockProps {
-  id: string;
+interface TextBlockProps extends BaseBlockProps{
   text: string;
   deltaString: string;
+
+}
+
+interface BaseBlockProps {
+  id: string;
+  type: EditorItemTypes;
+  [key: string]: any;
 }
 
 interface DocumentEditorProps {}
@@ -37,7 +46,7 @@ interface DocumentEditorProps {}
 // Document Editor Component
 const DocumentEditor: React.FC<DocumentEditorProps> = () => {
   const { theme } = useTheme();
-  const [components, setComponents] = useState<TextBlockProps[]>([]);
+  const [components, setComponents] = useState<BaseBlockProps[]>([]);
   const [title, setTitle] = useState<string>("Document Title");
   const [activeId, setActiveId] = useState<number | null>(null);
 
@@ -64,9 +73,19 @@ const DocumentEditor: React.FC<DocumentEditorProps> = () => {
       id: `text-block-${components.length + 1}`,
       text: "New Text Block",
       deltaString: "",
+      type: EditorItemTypes.TEXT_BLOCK,
     };
     setComponents((prevComponents) => [...prevComponents, newTextBlock]);
   };
+
+  const addDivider = () => {
+    const newDivier: BaseBlockProps = {
+      id: `divider-block-${components.length + 1}`,
+      type: EditorItemTypes.DIVIDER,
+    };
+    setComponents((prevComponents) => [...prevComponents, newDivier]);
+  };
+
 
   const handleTextChange = (
     id: string,
@@ -86,7 +105,11 @@ const DocumentEditor: React.FC<DocumentEditorProps> = () => {
     const lastEdited = new Date().toLocaleString();
     const name = title;
     const paragraphs = components.map((component) => {
-      return component.deltaString;
+      if (component.type == EditorItemTypes.TEXT_BLOCK) {
+        return component.deltaString;
+      } else if (component.type ==  EditorItemTypes.DIVIDER){
+        return 'divider'
+      }
     });
 
     if (paragraphs.length < 1) {
@@ -137,6 +160,20 @@ const DocumentEditor: React.FC<DocumentEditorProps> = () => {
         >
           Add Text Block
         </button>
+
+        <button
+          onClick={addDivider}
+          className="cursor-pointer px-3 py-2 rounded"
+          style={{
+            marginBottom: "16px",
+            cursor: "pointer",
+            backgroundColor: theme.brand800,
+            color: theme.neutral,
+          }}
+        >
+          Add Divier
+        </button>
+
         <button
           className="cursor-pointer px-3 py-2 rounded"
           style={{
@@ -181,14 +218,21 @@ const DocumentEditor: React.FC<DocumentEditorProps> = () => {
           >
             {components.map((component) => (
               <>
-                {activeId != Number(component.id) && (
+                {activeId != Number(component.id) && component.type == EditorItemTypes.TEXT_BLOCK &&(
                   <DraggableTextBlock
-                    key={component.id}
+                    key={component.id }
                     id={component.id}
                     text={component.text}
                     onTextChange={handleTextChange}
                   />
-                )}
+                )} 
+                {
+                  component.type == EditorItemTypes.DIVIDER && (
+                    <>
+                    <DraggableDivider id={component.id} />
+                    </>
+                  )
+                }
               </>
             ))}
           </div>
