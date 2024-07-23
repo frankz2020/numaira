@@ -1,9 +1,23 @@
 "use client";
 import { useFormat } from "@/app/providers/FormatContext";
 import { useTheme } from "@/app/providers/ThemeContext";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Spreadsheet, { CellBase, Matrix } from "react-spreadsheet";
-import DocumentEditor from "./documentEditor";
+import DocumentEditor, {
+  BaseBlockProps,
+  EditorItemTypes,
+  TextBlockProps,
+} from "./documentEditor";
+import {
+  closestCenter,
+  DndContext,
+  DragEndEvent,
+  DragStartEvent,
+  useSensors,
+} from "@dnd-kit/core";
+import { MouseSensor } from "./DndSensors";
+import { arrayMove } from "@dnd-kit/sortable";
+import DraggableButton, { ElementType } from "./draggableButton";
 
 interface Cell extends CellBase {
   value: string | number | boolean | null;
@@ -19,6 +33,9 @@ const NewTemplate = () => {
     [{ value: "" }, { value: "" }, { value: "" }],
   ]);
 
+  const [activeId, setActiveId] = useState<number | null>(null);
+  const [components, setComponents] = useState<BaseBlockProps[]>([]);
+
   const addRow = () => {
     setData([...data, new Array(data[0].length).fill({ value: "" })]);
   };
@@ -32,6 +49,32 @@ const NewTemplate = () => {
     // Implement your save functionality here, e.g., sending data to a backend
   };
 
+
+
+  
+
+  useEffect(() => {
+    setComponents([
+      {
+        id: `text-block-${components.length + 1}`,
+        text: "Start here :)",
+        deltaString: "",
+        type: EditorItemTypes.TEXT_BLOCK,
+      },
+    ]);
+  }, []);
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    setActiveId(active.id as number);
+  };
+
+  const sensors = useSensors({
+    sensor: MouseSensor,
+    options: {},
+  });
+
+
   return (
     <div
       style={{
@@ -40,7 +83,8 @@ const NewTemplate = () => {
         borderRadius: "5px",
       }}
     >
-      {/* <div style={{ marginTop: "20px" }}>
+      <>
+        {/* <div style={{ marginTop: "20px" }}>
         <button
         className="p-2"
           onClick={addRow}
@@ -79,8 +123,24 @@ const NewTemplate = () => {
       </div>
       <h2>Excel Editor</h2>
       <Spreadsheet data={data} onChange={setData} /> */}
+      </>
 
-      <DocumentEditor />
+      <DndContext
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        sensors={sensors}
+      >
+        <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+          <DraggableButton type={ElementType.DIVIDER} />
+          <DraggableButton type={ElementType.TEXT} />
+        </div>
+        <DocumentEditor
+          setComponents={setComponents}
+          components={components}
+          activeId={activeId}
+          setActiveId={setActiveId}
+        />
+      </DndContext>
     </div>
   );
 };

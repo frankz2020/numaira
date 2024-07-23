@@ -6,6 +6,7 @@ import {
   useSensors,
   DragOverlay,
   DragStartEvent,
+  useDroppable,
 } from "@dnd-kit/core";
 
 import {
@@ -23,70 +24,55 @@ import TemplateType from "../templateType";
 import { useGlobalContext } from "@/app/providers/GlobalContext";
 import draggableDivider from "./draggableDivider";
 import DraggableDivider from "./draggableDivider";
+import styled from "styled-components";
+import { useFormat } from "@/app/providers/FormatContext";
+import { useDndMonitor } from "@dnd-kit/core";
+import { ElementType } from "./draggableButton";
 export enum EditorItemTypes {
   TEXT_BLOCK,
   DIVIDER,
-};
-
-// Define TypeScript types for the components
-interface TextBlockProps extends BaseBlockProps{
-  text: string;
-  deltaString: string;
-
 }
 
-interface BaseBlockProps {
+// Define TypeScript types for the components
+export interface TextBlockProps extends BaseBlockProps {
+  text: string;
+  deltaString: string;
+}
+
+export interface BaseBlockProps {
   id: string;
   type: EditorItemTypes;
   [key: string]: any;
 }
 
-interface DocumentEditorProps {}
+interface DocumentEditorProps {
+  components: BaseBlockProps[];
+  setComponents: React.Dispatch<React.SetStateAction<BaseBlockProps[]>>;
+  activeId: number | null;
+  setActiveId: React.Dispatch<React.SetStateAction<number | null>>;
+}
 
 // Document Editor Component
-const DocumentEditor: React.FC<DocumentEditorProps> = () => {
+const DocumentEditor: React.FC<DocumentEditorProps> = (props) => {
+  const { activeId, setActiveId, components, setComponents } = props;
   const { theme } = useTheme();
-  const [components, setComponents] = useState<BaseBlockProps[]>([]);
+  const { format } = useFormat();
   const [title, setTitle] = useState<string>("Document Title");
-  const [activeId, setActiveId] = useState<number | null>(null);
 
   const { backendUrl } = useGlobalContext();
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (active.id !== over?.id) {
-      setComponents((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over?.id);
-        setActiveId(null);
-        return arrayMove(items, oldIndex, newIndex);
-      });
-    }
-  };
 
-  const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event;
-    setActiveId(active.id as number);
-  };
-
-  const addTextBlock = () => {
-    const newTextBlock: TextBlockProps = {
-      id: `text-block-${components.length + 1}`,
-      text: "New Text Block",
-      deltaString: "",
-      type: EditorItemTypes.TEXT_BLOCK,
-    };
-    setComponents((prevComponents) => [...prevComponents, newTextBlock]);
-  };
-
-  const addDivider = () => {
-    const newDivier: BaseBlockProps = {
-      id: `divider-block-${components.length + 1}`,
-      type: EditorItemTypes.DIVIDER,
-    };
-    setComponents((prevComponents) => [...prevComponents, newDivier]);
-  };
-
-
+  const InsertionIndicator = styled.div`
+  height: 4px;
+  background-color: ${theme.brand500};
+  opacity: 0.8;
+  margin-left: 4px;
+  margin-right: 4px;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  padding: 1px;
+  border-radius: ${format.roundmd}
+  transform: scale(1, 0.5);
+`;
   const handleTextChange = (
     id: string,
     newText: string,
@@ -101,14 +87,91 @@ const DocumentEditor: React.FC<DocumentEditorProps> = () => {
     );
   };
 
+  const [overIndex, setOverIndex] = useState<number | null>(null);
+  useDndMonitor({
+    onDragOver(event: DragEndEvent) {
+      const { over } = event;
+      if (over) {
+        const overIndex = components.findIndex((item) => item.id === over.id);
+        console.log("drag over, index:", overIndex, over.data.current);
+        setOverIndex(overIndex !== -1 ? overIndex : components.length);
+      } else {
+        setOverIndex(null);
+      }
+    },
+    onDragEnd(event: DragEndEvent) {
+      setOverIndex(null);
+      const { active, over } = event;
+      
+      if (typeof active.id === "string" && active.id.includes("draggableBtn")) {
+        console.log("find new element");
+        if (over) {
+          let newIndex = over.id
+            ? components.findIndex((item) => item.id === over.id)
+            : components.length;
+          if (newIndex === -1) {
+            newIndex = components.length;
+          }
+          if (
+            active.data.current &&
+            active.data.current.type == ElementType.DIVIDER
+          ) {
+            addDivider(newIndex);
+          } else if (
+            active.data.current &&
+            active.data.current.type == ElementType.TEXT
+          ) {
+            addTextBlock(newIndex);
+          }
+        }
+      } else if (active.id !== over?.id) {
+        setComponents((items) => {
+          const oldIndex = items.findIndex((item) => item.id === active.id);
+          const newIndex = items.findIndex((item) => item.id === over?.id);
+          setActiveId(null);
+          return arrayMove(items, oldIndex, newIndex);
+        });
+      }
+
+    },
+
+  
+  });
+  
+  const addTextBlock = (index: number) => {
+    const newTextBlock: TextBlockProps = {
+      id: `text-block-${components.length + 1}`,
+      text: "New Text Block",
+      deltaString: "",
+      type: EditorItemTypes.TEXT_BLOCK,
+    };
+    setComponents((prevComponents) => {
+      const newComponents = [...prevComponents];
+      newComponents.splice(index, 0, newTextBlock);
+      return newComponents;
+    });
+  };
+
+  const addDivider = (index: number) => {
+    const newDivider: BaseBlockProps = {
+      id: `divider-block-${components.length + 1}`,
+      type: EditorItemTypes.DIVIDER,
+    };
+    setComponents((prevComponents) => {
+      const newComponents = [...prevComponents];
+      newComponents.splice(index, 0, newDivider);
+      return newComponents;
+    });
+  };
+  
   const handleSaveTemplate = () => {
     const lastEdited = new Date().toLocaleString();
     const name = title;
     const paragraphs = components.map((component) => {
       if (component.type == EditorItemTypes.TEXT_BLOCK) {
         return component.deltaString;
-      } else if (component.type ==  EditorItemTypes.DIVIDER){
-        return 'divider'
+      } else if (component.type == EditorItemTypes.DIVIDER) {
+        return "divider";
       }
     });
 
@@ -140,40 +203,13 @@ const DocumentEditor: React.FC<DocumentEditorProps> = () => {
       });
   };
 
-  const sensors = useSensors({
-    sensor: MouseSensor,
-    options: {},
+  const { setNodeRef } = useDroppable({
+    id: "editor",
   });
 
   return (
     <div style={{ padding: "16px" }}>
       <div className="flex justify-between ">
-        <button
-          onClick={addTextBlock}
-          className="cursor-pointer px-3 py-2 rounded"
-          style={{
-            marginBottom: "16px",
-            cursor: "pointer",
-            backgroundColor: theme.brand500,
-            color: theme.neutral,
-          }}
-        >
-          Add Text Block
-        </button>
-
-        <button
-          onClick={addDivider}
-          className="cursor-pointer px-3 py-2 rounded"
-          style={{
-            marginBottom: "16px",
-            cursor: "pointer",
-            backgroundColor: theme.brand800,
-            color: theme.neutral,
-          }}
-        >
-          Add Divier
-        </button>
-
         <button
           className="cursor-pointer px-3 py-2 rounded"
           style={{
@@ -199,52 +235,49 @@ const DocumentEditor: React.FC<DocumentEditorProps> = () => {
           boxSizing: "border-box",
         }}
       />
-      <DndContext
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-        onDragStart={handleDragStart}
-        sensors={sensors}
-      >
+
+      <div ref={setNodeRef} id="editor">
         <SortableContext
           items={components}
           strategy={verticalListSortingStrategy}
         >
           <div
             style={{
-              minHeight: "400px",
+              minHeight: "500px",
               border: "2px dashed gray",
               padding: "16px",
             }}
           >
-            {components.map((component) => (
+            {components.map((component, index) => (
               <>
-                {activeId != Number(component.id) && component.type == EditorItemTypes.TEXT_BLOCK &&(
-                  <DraggableTextBlock
-                    key={component.id }
-                    id={component.id}
-                    text={component.text}
-                    onTextChange={handleTextChange}
-                  />
-                )} 
-                {
-                  component.type == EditorItemTypes.DIVIDER && (
-                    <>
+                {overIndex === index && <InsertionIndicator />}
+                {activeId != Number(component.id) &&
+                  component.type == EditorItemTypes.TEXT_BLOCK && (
+                    <DraggableTextBlock
+                      key={component.id}
+                      id={component.id}
+                      text={component.text}
+                      onTextChange={handleTextChange}
+                    />
+                  )}
+                {component.type == EditorItemTypes.DIVIDER && (
+                  <>
                     <DraggableDivider id={component.id} />
-                    </>
-                  )
-                }
+                  </>
+                )}
               </>
             ))}
+             {overIndex === components.length && <InsertionIndicator />}
           </div>
         </SortableContext>
-        <DragOverlay>
+      </div>
+      {/* <DragOverlay>
           <img
             src={DragPlaceholder.src}
             alt="placeholder"
             style={{ width: "50px", height: "50px" }}
           />
-        </DragOverlay>
-      </DndContext>
+        </DragOverlay> */}
     </div>
   );
 };
