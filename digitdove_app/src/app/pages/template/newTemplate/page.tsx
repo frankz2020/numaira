@@ -18,6 +18,7 @@ import {
 import { MouseSensor } from "./DndSensors";
 import { arrayMove } from "@dnd-kit/sortable";
 import DraggableButton, { ElementType } from "./draggableButton";
+import SideModuleMenu from "./sideModuleMenu";
 
 interface Cell extends CellBase {
   value: string | number | boolean | null;
@@ -36,6 +37,7 @@ const NewTemplate = () => {
   const [activeId, setActiveId] = useState<number | null>(null);
   const [components, setComponents] = useState<BaseBlockProps[]>([]);
 
+
   const addRow = () => {
     setData([...data, new Array(data[0].length).fill({ value: "" })]);
   };
@@ -48,10 +50,6 @@ const NewTemplate = () => {
     console.log("Saving data:", data);
     // Implement your save functionality here, e.g., sending data to a backend
   };
-
-
-
-  
 
   useEffect(() => {
     setComponents([
@@ -73,7 +71,6 @@ const NewTemplate = () => {
     sensor: MouseSensor,
     options: {},
   });
-
 
   return (
     <div
@@ -130,10 +127,12 @@ const NewTemplate = () => {
         onDragStart={handleDragStart}
         sensors={sensors}
       >
-        <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+        
+        {/* <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
           <DraggableButton type={ElementType.DIVIDER} />
           <DraggableButton type={ElementType.TEXT} />
-        </div>
+        </div> */}
+
         <DocumentEditor
           setComponents={setComponents}
           components={components}

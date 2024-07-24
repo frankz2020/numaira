@@ -28,6 +28,9 @@ import styled from "styled-components";
 import { useFormat } from "@/app/providers/FormatContext";
 import { useDndMonitor } from "@dnd-kit/core";
 import { ElementType } from "./draggableButton";
+import ReactQuill from "react-quill";
+import UnifiedToolbar from "./unifiedToolbar";
+import SideModuleMenu from "./sideModuleMenu";
 export enum EditorItemTypes {
   TEXT_BLOCK,
   DIVIDER,
@@ -58,6 +61,7 @@ const DocumentEditor: React.FC<DocumentEditorProps> = (props) => {
   const { theme } = useTheme();
   const { format } = useFormat();
   const [title, setTitle] = useState<string>("Document Title");
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
   const { backendUrl } = useGlobalContext();
 
@@ -88,6 +92,8 @@ const DocumentEditor: React.FC<DocumentEditorProps> = (props) => {
   };
 
   const [overIndex, setOverIndex] = useState<number | null>(null);
+  const [activeEditor, setActiveEditor] = useState<ReactQuill | null>(null);
+
   useDndMonitor({
     onDragOver(event: DragEndEvent) {
       const { over } = event;
@@ -102,7 +108,7 @@ const DocumentEditor: React.FC<DocumentEditorProps> = (props) => {
     onDragEnd(event: DragEndEvent) {
       setOverIndex(null);
       const { active, over } = event;
-      
+
       if (typeof active.id === "string" && active.id.includes("draggableBtn")) {
         console.log("find new element");
         if (over) {
@@ -132,12 +138,9 @@ const DocumentEditor: React.FC<DocumentEditorProps> = (props) => {
           return arrayMove(items, oldIndex, newIndex);
         });
       }
-
     },
-
-  
   });
-  
+
   const addTextBlock = (index: number) => {
     const newTextBlock: TextBlockProps = {
       id: `text-block-${components.length + 1}`,
@@ -163,7 +166,7 @@ const DocumentEditor: React.FC<DocumentEditorProps> = (props) => {
       return newComponents;
     });
   };
-  
+
   const handleSaveTemplate = () => {
     const lastEdited = new Date().toLocaleString();
     const name = title;
@@ -207,6 +210,11 @@ const DocumentEditor: React.FC<DocumentEditorProps> = (props) => {
     id: "editor",
   });
 
+  
+  const toggleMenu = () => {
+    setIsMenuOpen((prev) => !prev);
+  };
+
   return (
     <div style={{ padding: "16px" }}>
       <div className="flex justify-between ">
@@ -223,7 +231,9 @@ const DocumentEditor: React.FC<DocumentEditorProps> = (props) => {
           Save Template
         </button>
       </div>
-
+      <UnifiedToolbar editor={activeEditor} />
+      <button onClick={toggleMenu}>Module</button>
+      <SideModuleMenu isOpen={isMenuOpen} toggleMenu={toggleMenu} />
       <input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
@@ -258,6 +268,8 @@ const DocumentEditor: React.FC<DocumentEditorProps> = (props) => {
                       id={component.id}
                       text={component.text}
                       onTextChange={handleTextChange}
+                      setActiveEditor={setActiveEditor}
+                      activeEditor={activeEditor!}
                     />
                   )}
                 {component.type == EditorItemTypes.DIVIDER && (
@@ -267,7 +279,7 @@ const DocumentEditor: React.FC<DocumentEditorProps> = (props) => {
                 )}
               </>
             ))}
-             {overIndex === components.length && <InsertionIndicator />}
+            {overIndex === components.length && <InsertionIndicator />}
           </div>
         </SortableContext>
       </div>
