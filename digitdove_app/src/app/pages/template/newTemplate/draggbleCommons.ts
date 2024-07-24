@@ -1,7 +1,7 @@
 export const draggableStyle = {
     // transform: CSS.Transform.toString(transform),
     transition: 'all 0.2s ease',
-    padding: '10px',
+    padding: '15px',
     // borderRadius: '8px',
     margin: '0 4px', // Margin left and right
     backgroundColor: 'white',

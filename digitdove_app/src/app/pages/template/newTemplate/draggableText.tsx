@@ -27,7 +27,6 @@ const DraggableTextBlock: React.FC<DraggableTextBlockProps> = ({
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
-
   const editorRef = useRef<ReactQuill | null>(null);
   const { theme } = useTheme();
   const [isSelected, setIsSelected] = React.useState(false);
@@ -37,8 +36,12 @@ const DraggableTextBlock: React.FC<DraggableTextBlockProps> = ({
     boxShadow: isSelected ? "0px 4px 8px rgba(0, 0, 0, 0.1)" : "none",
     marginTop: isSelected ? "4px" : "0px",
     marginBottom: isSelected ? "4px" : "0px",
-    borderRadius: isSelected || activeEditor === editorRef.current ? "4px" : "0px",
-    border: activeEditor === editorRef.current ? '2px solid blue' : '2px solid transparent',
+    borderRadius:
+      isSelected || activeEditor === editorRef.current ? "4px" : "0px",
+    border:
+      activeEditor === editorRef.current
+        ? "2px solid blue"
+        : "2px solid transparent",
   };
 
   return (
@@ -47,19 +50,19 @@ const DraggableTextBlock: React.FC<DraggableTextBlockProps> = ({
       style={style}
       {...attributes}
       {...listeners}
-      onMouseDown={() => setIsSelected(true)}
-      onMouseUp={() => setIsSelected(false)}
-
-      onClick={() => setActiveEditor(editorRef.current!)}
+      onMouseOver={() => setIsSelected(true)}
+      onMouseOut={() => setIsSelected(false)}
+      
     >
-      <section data-no-dnd="true">
+      <section data-no-dnd="true" onClick={() =>  setActiveEditor(editorRef.current!)}>
         <ReactQuill
           ref={editorRef}
           value={text}
           theme="snow"
-          onChange={(content, delta, source, editor) =>
-            onTextChange(id, content, JSON.stringify(editor.getContents()))
-          }
+          onChange={(content, delta, source, editor) => {
+            onTextChange(id, content, JSON.stringify(editor.getContents()));
+           
+          }}
           //   onChange={(newText) => onTextChange(id, newText)}
           modules={{
             toolbar: false,

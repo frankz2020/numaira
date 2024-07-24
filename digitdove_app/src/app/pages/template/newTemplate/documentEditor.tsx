@@ -31,6 +31,7 @@ import { ElementType } from "./draggableButton";
 import ReactQuill from "react-quill";
 import UnifiedToolbar from "./unifiedToolbar";
 import SideModuleMenu from "./sideModuleMenu";
+import ModuleSVG from "../../../assets/template/module.svg";
 export enum EditorItemTypes {
   TEXT_BLOCK,
   DIVIDER,
@@ -108,7 +109,7 @@ const DocumentEditor: React.FC<DocumentEditorProps> = (props) => {
     onDragEnd(event: DragEndEvent) {
       setOverIndex(null);
       const { active, over } = event;
-
+      console.log("drag end")
       if (typeof active.id === "string" && active.id.includes("draggableBtn")) {
         console.log("find new element");
         if (over) {
@@ -210,7 +211,6 @@ const DocumentEditor: React.FC<DocumentEditorProps> = (props) => {
     id: "editor",
   });
 
-  
   const toggleMenu = () => {
     setIsMenuOpen((prev) => !prev);
   };
@@ -231,8 +231,14 @@ const DocumentEditor: React.FC<DocumentEditorProps> = (props) => {
           Save Template
         </button>
       </div>
-      <UnifiedToolbar editor={activeEditor} />
-      <button onClick={toggleMenu}>Module</button>
+      <div className="flex justify-between">
+        <UnifiedToolbar editor={activeEditor} />
+        <button onClick={toggleMenu} className="flex items-center p-1 gap-1" style={{border: '2px solid ' + theme.neutral1000, borderRadius: format.roundmd}}>
+          <ModuleSVG/>
+          Module
+          </button>
+      </div>
+
       <SideModuleMenu isOpen={isMenuOpen} toggleMenu={toggleMenu} />
       <input
         value={title}
