@@ -1,7 +1,7 @@
 import spacy
 import re
 
-# Load the spaCy model for "Chinese" only
+# Load the spaCy model for "English" only
 nlp = spacy.load("en_core_web_sm")
 
 def split_sentence(doc):
