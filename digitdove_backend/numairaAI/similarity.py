@@ -11,6 +11,7 @@ def find_relevant_clips(clips, query_embedding, embed_text, threshold=0.4):
             relevant_clips.append((clip, similarity))
     return sorted(relevant_clips, key=lambda x: x[1], reverse=True)
 
+#Assumption: we are only finding excel value that semantically matches doc file. If there's a unit in excel, it will not match successfully.
 def identify_exact_words(relevant_clips, revenue_number, api_key):
     clips_text = "\n".join([clip for clip, _ in relevant_clips])
     prompt = (
