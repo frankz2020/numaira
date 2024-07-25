@@ -1,9 +1,10 @@
 from numairaAI.extract import extract_text_from_word
-from numairaAI.split import split_text_into_clips
 from numairaAI.embedding import embed_text
 from numairaAI.store import store_clips_to_file
 from numairaAI.similarity import find_relevant_clips, identify_exact_words
 from numairaAI.format_mapping import format_maps, parse_nested_list
+from numairaAI.en_split import en_split_text_into_clips
+from numairaAI.cn_split import cn_split_text_into_clips
 import os
 
 # Qwen API key
@@ -13,13 +14,12 @@ api_key = os.getenv("API_KEY")
 # return a list of lists with the old value and the new value
 def numberMappingFromExcelToWord(word_value, old_excel_value, new_excel_value):
 
-    # File paths
-
     clips_file = "clips.txt"
 
     # extracted_text = extract_text_from_word(word_value)
     extracted_text = word_value
-    clips = split_text_into_clips(extracted_text)
+    clips = en_split_text_into_clips(extracted_text) 
+    #clips = cn_split_text_into_clips(extracted_text)  chinese ver
     store_clips_to_file(clips, clips_file)
 
     query_embedding = embed_text(old_excel_value)
@@ -47,8 +47,6 @@ def numberMappingFromExcelToWord(word_value, old_excel_value, new_excel_value):
         print(new_value)
         temp.append(new_value)
         task.append(temp)
-    print(task)
-
     return task
 
 

@@ -5,3 +5,4 @@ pip install dashscope
 pip install python-docx
 pip install sentence-transformers
 python -m spacy download zh_core_web_sm
+python3 -m spacy download en_core_web_sm
