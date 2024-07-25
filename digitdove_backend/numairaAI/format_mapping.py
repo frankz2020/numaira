@@ -54,6 +54,3 @@ def parse_nested_list(s):
             temp += char
     
     return result
-
-nested_list_str = "[[10,811,255], [10,811百万]]"
-print(parse_nested_list(nested_list_str))

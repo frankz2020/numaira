@@ -28,3 +28,10 @@ migrations/
 
 # MacOS
 .DS_Store
+
+
+# Ignore all .xlsx files
+*.xlsx
+
+# Ignore all .docx files
+*.docx

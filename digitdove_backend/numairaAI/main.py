@@ -13,8 +13,6 @@ api_key = os.getenv("API_KEY")
 # return a list of lists with the old value and the new value
 def numberMappingFromExcelToWord(word_value, old_excel_value, new_excel_value):
 
-    # File paths
-
     clips_file = "clips.txt"
 
     # extracted_text = extract_text_from_word(word_value)
