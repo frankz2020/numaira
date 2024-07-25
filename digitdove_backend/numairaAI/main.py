@@ -4,7 +4,7 @@ from numairaAI.store import store_clips_to_file
 from numairaAI.similarity import find_relevant_clips, identify_exact_words
 from numairaAI.format_mapping import format_maps, parse_nested_list
 from numairaAI.en_split import en_split_text_into_clips
-from numairaAI.cn_split import cn_split_text_into_clips
+# from numairaAI.cn_split import cn_split_text_into_clips
 import os
 
 # Qwen API key
@@ -27,15 +27,6 @@ def numberMappingFromExcelToWord(word_value, old_excel_value, new_excel_value):
     relevant_clips = find_relevant_clips(clips, query_embedding, embed_text)
 
     exact_words = identify_exact_words(relevant_clips, old_excel_value, api_key)
-
-    # print("Relevant clips found in the Word file:")
-    # for clip, similarity in relevant_clips:
-    #     print(f"Clip: {clip}\nSimilarity: {similarity}\n")
-
-    # print("revenue_number:"+revenue_number)
-    # print("Exact words related to the revenue number:")
-    # print(exact_words)
-    # print(type(exact_words))
 
     exact_words_list = parse_nested_list(exact_words)
     task = []
