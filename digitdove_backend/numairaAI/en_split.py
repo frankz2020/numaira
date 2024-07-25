@@ -2,7 +2,7 @@ import spacy
 import re
 
 # Load the spaCy model for "Chinese" only
-nlp = spacy.load("zh_core_web_sm")
+nlp = spacy.load("en_core_web_sm")
 
 def split_sentence(doc):
     chunks = []
@@ -23,7 +23,7 @@ def split_sentence(doc):
 
     return chunks
 
-def split_text_into_clips(text):
+def en_split_text_into_clips(text):
     # Process the text with spaCy
     doc = nlp(text)
     sentences = split_sentence(doc)
@@ -36,4 +36,3 @@ def split_text_into_clips(text):
     # Remove any empty clips
     clips = [clip.strip() for clip in clips if clip.strip()]
     return clips
-
