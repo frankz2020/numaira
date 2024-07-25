@@ -47,8 +47,6 @@ def numberMappingFromExcelToWord(word_value, old_excel_value, new_excel_value):
         print(new_value)
         temp.append(new_value)
         task.append(temp)
-    print(task)
-
     return task
 
 
