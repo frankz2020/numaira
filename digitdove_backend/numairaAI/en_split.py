@@ -1,7 +1,7 @@
 import spacy
 import re
 
-# Load the spaCy model for "Chinese" only
+# Load the spaCy model for "English" only
 nlp = spacy.load("en_core_web_sm")
 
 def split_sentence(doc):
@@ -10,6 +10,7 @@ def split_sentence(doc):
 
     for token in doc:
         # This match save the format of any large number seperated by ',' each three digits.
+        # That is an big assumption: math value in excel is three digit seperation.
         if re.match(r'^\d{1,3}(,\d{3})*$', token.text):
             current_chunk.append(token.text)
         else:
