@@ -99,8 +99,8 @@ const SyncSpace = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          credentials: "include",
         },
+        credentials: "include",
         body: JSON.stringify({
           oldExcelValue: associatedDataValue,
           newExcelValue: newDataValue,
@@ -111,10 +111,10 @@ const SyncSpace = () => {
       if (!response.ok) {
         throw new Error("Failed to send data to backend");
       }
-      const results = response.json();
+      const results = await response.json(); // Await the JSON parsing
 
       console.log("Data sent to backend successfully");
-      console.log("Results:", results);
+      console.log("Results:", results); // Log the returned data
     } catch (error) {
       console.error("Error sending data to backend:", error);
     }
