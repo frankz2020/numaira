@@ -4,13 +4,13 @@ from models.User import User
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from numairaAI.main import numberMappingFromExcelToWord
+from concurrent.futures import ThreadPoolExecutor
 aiRoutes = Blueprint('aiRoutes', __name__)
 
 @aiRoutes.route('/mapExcelNumberToWord', methods=['POST']) 
 def mapExcelNumberToWord(): 
-    # {oldExcelValue: number[], newExcelValue: number[], wordValue: string}
     data = request.get_json()
-    print(data)
+    print("sanity check --- ",  "old values len:", len(data.get('oldExcelValue')), "new values len:" , len(data.get('newExcelValue')) )
     if not data.get('oldExcelValue'):
         return jsonify({'message': 'no old excel value found'}), 400
     if not data.get('newExcelValue'):
@@ -18,9 +18,23 @@ def mapExcelNumberToWord():
     if not data['wordValue']: 
         return jsonify({'message': 'no word value found'}), 400
 
-    oldExcelValue = data['oldExcelValue'][0]
-    newExcelValue = data['newExcelValue'][0]
+    oldExcelValues = data['oldExcelValue']
+    newExcelValues = data['newExcelValue']
     wordValue = data['wordValue']
-    result = numberMappingFromExcelToWord(wordValue, oldExcelValue, newExcelValue)
-  
-    return jsonify({'result': result}), 200
+
+    if len(oldExcelValues) != len(newExcelValues):
+        return jsonify({'message': 'Mismatch in the number of old and new Excel values'}), 400
+
+    results = []
+    with ThreadPoolExecutor() as executor:
+        futures = [
+            executor.submit(process_mapping, wordValue, oldExcelValues[i], newExcelValues[i])
+            for i in range(len(oldExcelValues))
+        ]
+        for future in futures:
+            results.append(future.result())
+
+    return jsonify({'results': results}), 200
+
+def process_mapping(wordValue, oldExcelValue, newExcelValue):
+    return numberMappingFromExcelToWord(wordValue, oldExcelValue, newExcelValue)

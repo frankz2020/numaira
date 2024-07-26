@@ -9,7 +9,9 @@ import PDFimage from "../../assets/placeholder/pdfFrame.svg";
 import XLSXimage from "../../assets/placeholder/xlsxFrame.svg";
 import DOCXimage from "../../assets/placeholder/docxFrame.svg";
 import CloseIcon from "../../assets/close.svg";
-
+import mammoth from "mammoth";
+import { read as XLSXRead, utils as XLSXUtil } from "xlsx";
+import { useGlobalContext } from "@/app/providers/GlobalContext";
 enum SyncSpaceStep {
   TargetFile,
   AssociatedData,
@@ -27,14 +29,17 @@ const FileDisplayContainer = styled.div`
   background-color: ${(props) => props.theme.neutral};
 `;
 
-const FileVisualDiv = styled.div<{dotted: boolean, theme: any}>`
+const FileVisualDiv = styled.div<{ dotted: boolean; theme: any }>`
   max-width: 250px;
   min-width: 150px;
   width: 25%;
   height: auto;
   align-items: center;
   border-radius: 8px;
-  border: ${(props) => props.dotted ? "2px dotted " + props.theme.neutral1000 : "2px solid " +  props.theme.neutral100};
+  border: ${(props) =>
+    props.dotted
+      ? "2px dotted " + props.theme.neutral1000
+      : "2px solid " + props.theme.neutral100};
   background-color: ${(props) => props.theme.neutral100} !important;
 `;
 
@@ -50,13 +55,70 @@ const getPlaceHolder = (name: string) => {
   }
 };
 
+const readExcelFile = (file: File, numberOnly: boolean): Promise<any[]> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const arrayBuffer = e.target?.result as ArrayBuffer;
+      const workbook = XLSXRead(arrayBuffer, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSXUtil.sheet_to_json(worksheet, { header: 1 });
+
+      // Flatten the array and filter based on numberOnly
+      const flatArray = jsonData
+        .flat()
+        .filter((value: any) => typeof value === "number")
+        .map((value: number) => value.toString());
+
+      resolve(flatArray);
+    };
+    reader.onerror = (error) => reject(error);
+    reader.readAsArrayBuffer(file);
+  });
+};
 const SyncSpace = () => {
   const { format } = useFormat();
   const { theme } = useTheme();
+  const { backendUrl } = useGlobalContext();
   const [currentStep, setCurrentStep] = useState(SyncSpaceStep.TargetFile);
   const [targetFile, setTargetFile] = useState<File | null>(null);
+  const [targetFileText, setTargetFileText] = useState<string | null>(null);
+
   const [associatedData, setAssociatedData] = useState<File | null>(null);
+  const [associatedDataValue, setAssociatedDataValue] = useState<any[] | null>(
+    null
+  );
+
   const [newData, setNewData] = useState<File | null>(null);
+  const [newDataValue, setNewDataValue] = useState<any[] | null>(null);
+
+  const sendToBackend = async () => {
+    try {
+      const response = await fetch(backendUrl + "/ai/mapExcelNumberToWord", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          credentials: "include",
+        },
+        body: JSON.stringify({
+          oldExcelValue: associatedDataValue,
+          newExcelValue: newDataValue,
+          wordValue: targetFileText,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to send data to backend");
+      }
+      const results = response.json();
+
+      console.log("Data sent to backend successfully");
+      console.log("Results:", results);
+    } catch (error) {
+      console.error("Error sending data to backend:", error);
+    }
+  };
 
   return (
     <div className="flex h-100" style={{ height: "100%" }}>
@@ -83,9 +145,20 @@ const SyncSpace = () => {
           {currentStep == SyncSpaceStep.TargetFile && (
             <UploadButton
               fileType={[".docx"]}
-              onClick={(file: File) => {
+              onClick={async (file: File) => {
                 setTargetFile(file);
                 setCurrentStep(currentStep + 1);
+
+                try {
+                  const arrayBuffer = await file.arrayBuffer();
+                  const result = await mammoth.extractRawText({ arrayBuffer });
+                  const text = result.value;
+                  setTargetFileText(text);
+                  // Now you can send the text to your backend
+                  //   sendTextToBackend(text);
+                } catch (error) {
+                  console.error("Error reading .docx file:", error);
+                }
               }}
             />
           )}
@@ -111,10 +184,19 @@ const SyncSpace = () => {
           {currentStep == SyncSpaceStep.AssociatedData && (
             <UploadButton
               fileType={[".xlsx"]}
-              onClick={(file: File) => {
+              onClick={async (file: File) => {
                 console.log("associatedData", file);
                 setAssociatedData(file);
                 setCurrentStep(currentStep + 1);
+                try {
+                  const data = await readExcelFile(file, true);
+                  setAssociatedDataValue(data);
+                  console.log("Extracted data:", data);
+                  // Now you can send the data to your backend
+                  // sendToBackend({ type: 'xlsx', content: data });
+                } catch (error) {
+                  console.error("Error reading .xlsx file:", error);
+                }
               }}
             />
           )}
@@ -140,9 +222,18 @@ const SyncSpace = () => {
           {currentStep == SyncSpaceStep.NewData && (
             <UploadButton
               fileType={[".xlsx"]}
-              onClick={(file: File) => {
+              onClick={async (file: File) => {
                 setNewData(file);
                 setCurrentStep(currentStep + 1);
+                try {
+                  const data = await readExcelFile(file, true);
+                  console.log("Extracted data:", data);
+                  setNewDataValue(data);
+                  // Now you can send the data to your backend
+                  // sendToBackend({ type: 'xlsx', content: data });
+                } catch (error) {
+                  console.error("Error reading .xlsx file:", error);
+                }
               }}
             />
           )}
@@ -176,11 +267,12 @@ const SyncSpace = () => {
               }}
             >
               <div
-                onClick={() => {
+                onClick={async () => {
+                  await sendToBackend();
                   setCurrentStep(currentStep + 1);
                 }}
               >
-                Generate
+                Generate !
               </div>
             </div>
           )}
@@ -238,7 +330,6 @@ const SyncSpace = () => {
               </FileVisualDiv>
             </div>
 
-            
             {associatedData && <div>Arrow up</div>}
             {associatedData && (
               <div>
@@ -286,7 +377,7 @@ const SyncSpace = () => {
                 </FileVisualDiv>
               </div>
             )}
-            {newData &&<div>Arrow up</div>}
+            {newData && <div>Arrow up</div>}
             {targetFile && associatedData && newData && (
               <div>
                 <FileVisualDiv theme={theme} dotted={false}>
