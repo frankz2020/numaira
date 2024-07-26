@@ -28,6 +28,15 @@ def numberMappingFromExcelToWord(word_value, old_excel_value, new_excel_value):
 
     exact_words = identify_exact_words(relevant_clips, old_excel_value, api_key)
 
+    print("Relevant clips found in the Word file:")
+    for clip, similarity in relevant_clips:
+        print(f"Clip: {clip}\nSimilarity: {similarity}\n")
+
+    # print("revenue_number:"+revenue_number)
+    print("Exact words related to the revenue number:")
+    print(exact_words)
+    # print(type(exact_words))
+
     exact_words_list = parse_nested_list(exact_words)
     task = []
     for i in exact_words_list:
