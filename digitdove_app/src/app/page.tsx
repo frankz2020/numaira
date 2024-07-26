@@ -10,12 +10,6 @@ export default function Main() {
   return (
     <main className="h-screen">
       <div
-        style={{
-          paddingLeft: format.sideNavbarWidth,
-          paddingTop: format.topNavbarHeight,
-          height: `calc(100vh - ${format.topNavbarHeight})`,
-          width: `calc(100vw - ${format.sideNavbarWidth})`,
-        }}
       >
         <Home />
       </div>

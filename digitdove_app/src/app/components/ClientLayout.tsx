@@ -19,9 +19,6 @@ const ClientLayout = ({ children }: { children: React.ReactNode }) => {
   const { loggedIn } = useGlobalContext();
   const router = useRouter();
 
-  const [actualSideNavbarWidth, setActualSideNavbarWidth] = useState("0px");
-  const [actualTopNavbarHeight, setActualTopNavbarHeight] = useState("0px");
-
   const calculateSideNavbarWidth = () => {
     const sideNavbarWidthPx =
       typeof sideNavbarWidth === "string" && sideNavbarWidth.endsWith("%")
@@ -29,14 +26,12 @@ const ClientLayout = ({ children }: { children: React.ReactNode }) => {
         : parseFloat(sideNavbarWidth);
 
     const maxSideNavbarWidthPx =
-      typeof maxSideNavbarWidth === "string" &&
-      maxSideNavbarWidth.endsWith("px")
+      typeof maxSideNavbarWidth === "string" && maxSideNavbarWidth.endsWith("px")
         ? parseFloat(maxSideNavbarWidth)
         : parseFloat(maxSideNavbarWidth);
 
     const minSideNavbarWidthPx =
-      typeof minSideNavbarWidth === "string" &&
-      minSideNavbarWidth.endsWith("px")
+      typeof minSideNavbarWidth === "string" && minSideNavbarWidth.endsWith("px")
         ? parseFloat(minSideNavbarWidth)
         : parseFloat(minSideNavbarWidth);
 
@@ -53,14 +48,12 @@ const ClientLayout = ({ children }: { children: React.ReactNode }) => {
         : parseFloat(topNavbarHeight);
 
     const maxTopNavbarHeightPx =
-      typeof maxTopNavbarHeight === "string" &&
-      maxTopNavbarHeight.endsWith("px")
+      typeof maxTopNavbarHeight === "string" && maxTopNavbarHeight.endsWith("px")
         ? parseFloat(maxTopNavbarHeight)
         : parseFloat(maxTopNavbarHeight);
 
     const minTopNavbarHeightPx =
-      typeof minTopNavbarHeight === "string" &&
-      minTopNavbarHeight.endsWith("px")
+      typeof minTopNavbarHeight === "string" && minTopNavbarHeight.endsWith("px")
         ? parseFloat(minTopNavbarHeight)
         : parseFloat(minTopNavbarHeight);
 
@@ -70,12 +63,13 @@ const ClientLayout = ({ children }: { children: React.ReactNode }) => {
     );
   };
 
+  const [actualSideNavbarWidth, setActualSideNavbarWidth] = useState(calculateSideNavbarWidth());
+  const [actualTopNavbarHeight, setActualTopNavbarHeight] = useState(calculateTopNavbarHeight());
+
   useEffect(() => {
     const handleResize = () => {
-      const width = calculateSideNavbarWidth();
-      const height = calculateTopNavbarHeight();
-      setActualSideNavbarWidth(`${width}px`);
-      setActualTopNavbarHeight(`${height}px`);
+      setActualSideNavbarWidth(calculateSideNavbarWidth());
+      setActualTopNavbarHeight(calculateTopNavbarHeight());
     };
 
     handleResize(); // Set initial width and height
@@ -106,18 +100,18 @@ const ClientLayout = ({ children }: { children: React.ReactNode }) => {
     <>
       {loggedIn ? (
         <div>
-          <div className="relative h-screen hidden lg:block ">
+          <div className="relative h-screen hidden lg:block">
             {/* Top Navbar */}
-            <div className="absolute top-0 left-0 z-10 w-full" style={{minHeight: actualTopNavbarHeight}}>
-              <TopNav/>
+            <div className="absolute top-0 left-0 z-10 w-full" style={{ minHeight: `${actualTopNavbarHeight}px` }}>
+              <TopNav />
             </div>
 
             {/* Side Navbar */}
             <div
               className="absolute top-0 left-0 z-0 h-full"
               style={{
-                width: actualSideNavbarWidth,
-                top: actualTopNavbarHeight,
+                width: `${actualSideNavbarWidth}px`,
+                top: `${actualTopNavbarHeight}px`,
               }}
             >
               <SideNav />
@@ -127,10 +121,10 @@ const ClientLayout = ({ children }: { children: React.ReactNode }) => {
             <div
               className="relative z-0"
               style={{
-                left: actualSideNavbarWidth,
-                top: actualTopNavbarHeight,
-                height: `calc(100vh - ${actualTopNavbarHeight})`,
-                width: `calc(100vw - ${actualSideNavbarWidth})`,
+                left: `${actualSideNavbarWidth}px`,
+                top: `${actualTopNavbarHeight}px`,
+                width: `calc(100vw - ${actualSideNavbarWidth}px)`,
+                height: `calc(100vh - ${actualTopNavbarHeight}px)`,
               }}
             >
               {children}

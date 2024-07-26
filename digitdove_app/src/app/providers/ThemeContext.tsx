@@ -14,6 +14,7 @@ interface ThemeContextProps {
 interface Theme {
   primary: string;
   neutral: string;
+  neutral50: string;
   neutral100: string;
   neutral200: string;
   neutral300: string;
@@ -31,12 +32,14 @@ interface Theme {
 interface ColorType {
   primary: string;
   neutral: string;
+  neutral50: string;
   neutral100: string;
   neutral200: string;
   neutral700: string;
   neutral1000: string;
   primary_dark: string;
   neutral_dark: string;
+  neutral50_dark: string;
   neutral100_dark: string;
   neutral200_dark: string;
   neutral700_dark: string;
@@ -63,6 +66,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
           primary: colors.primary,
           neutral100: colors.neutral100,
           neutral: colors.neutral,
+          neutral50: colors.neutral50,
           neutral700: colors.neutral700,
           neutral1000: colors.neutral1000,
           neutral200: colors.neutral200,
@@ -80,6 +84,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         setTheme({
           primary: colors.primary,
           neutral100: colors.neutral100,
+          neutral50: colors.neutral50,
           neutral: colors.neutral,
           neutral700: colors.neutral700,
           neutral1000: colors.neutral1000,

@@ -1,6 +1,6 @@
 {
     "sideNavbarWidth": "10%",
-    "maxSideNavbarWidth": "100px",
+    "maxSideNavbarWidth": "50px",
     "minSideNavbarWidth": "70px",
     "topNavbarHeight": "7%",
     "maxTopNavbarHeight": "100px",

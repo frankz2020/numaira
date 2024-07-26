@@ -1,11 +1,14 @@
 {
     "neutral": "#FFFFFF",
+    "neutral50": "#FAFAFA",
     "neutral100": "#F6F6F6",
     "neutral200": "#EDEDED",
     "neutral700": "#767676",
     "neutral1000": "#212121",
     "primary": "#0066FF",
+
     "neutral_dark": "#1E1E1E",
+    "neutral50_dark": "#262626",
     "neutral100_dark": "#2C2C2C",
     "neutual200_dark": "#444444",
     "neutral700_dark": "#ADADAD",

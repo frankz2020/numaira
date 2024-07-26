@@ -8,6 +8,7 @@ import BrowseSVG from "../assets/browse.svg";
 import CreateSVG from "../assets/create.svg";
 import TemplateSVG from "../assets/template.svg";
 import CommunitySVG from "../assets/community.svg";
+import SyncSVG from "../assets/syncSpace.svg";
 import SettingSVG from "../assets/setting.svg";
 import BellSVG from "../assets/bell.svg";
 import HelpSVG from "../assets/helpMessage.svg";
@@ -16,6 +17,7 @@ import { useRouter, usePathname } from "next/navigation";
 export enum ButtonOptions {
   Home,
   Create,
+  SyncSpace,
   Browse,
   Template,
   Community,
@@ -35,7 +37,9 @@ const SideNav = () => {
       setSelectedBtn(ButtonOptions.Home);
     } else if (pathname.startsWith("/create")) {
       setSelectedBtn(ButtonOptions.Create);
-    } else if (pathname.startsWith("/browse")) {
+    } else if (pathname.startsWith("/syncSpace")) {
+      setSelectedBtn(ButtonOptions.SyncSpace);
+    }else if (pathname.startsWith("/browse")) {
       setSelectedBtn(ButtonOptions.Browse);
     } else if (pathname.startsWith("/template")) {
       setSelectedBtn(ButtonOptions.Template);
@@ -46,16 +50,15 @@ const SideNav = () => {
     }
   }, [pathname]);
   return (
-    <>
-      {/* Side Navbar */}
+
       <div
         className="flex flex-col h-full gap-4 border-r-2 pt-5"
         style={{
           borderColor: theme.neutual200,
           backgroundColor: theme.neutral100,
-          width: format.sideNavbarWidth,
-          maxWidth: format.maxSideNavbarWidth,
-          minWidth: format.minSideNavbarWidth,
+          // width: format.sideNavbarWidth,
+          // maxWidth: format.maxSideNavbarWidth,
+          // minWidth: format.minSideNavbarWidth,
           // height: `calc(100vh - ${format.topNavbarHeight})`,
         }}
       >
@@ -70,7 +73,7 @@ const SideNav = () => {
           SvgIcon={HomeSVG}
         />
         <NavButton
-          name="SyncSpace"
+          name="Create"
           highlightDirection={HighlightDirection.Left}
           selected={selectedBtn == ButtonOptions.Create}
           onClick={() => {
@@ -78,6 +81,16 @@ const SideNav = () => {
             router.push("/create");
           }}
           SvgIcon={CreateSVG}
+        />
+        <NavButton
+          name="SyncSpace"
+          highlightDirection={HighlightDirection.Left}
+          selected={selectedBtn == ButtonOptions.SyncSpace}
+          onClick={() => {
+            setSelectedBtn(ButtonOptions.SyncSpace);
+            router.push("/syncSpace");
+          }}
+          SvgIcon={SyncSVG}
         />
         <NavButton
           name="Browse"
@@ -110,7 +123,6 @@ const SideNav = () => {
           SvgIcon={CommunitySVG}
         />
       </div>
-    </>
   );
 };
 
