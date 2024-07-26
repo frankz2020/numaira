@@ -4,7 +4,6 @@ import re
 # Load the spaCy model for "English" only
 nlp = spacy.load("en_core_web_sm")
 
-test = "was $2.70 billion and $5.22 billion, "
 
 def split_sentence(doc):
     chunks = []
@@ -49,4 +48,3 @@ def en_split_text_into_clips(text):
     clips = [clip.strip() for clip in clips if clip.strip()]
     return clips
 
-print(en_split_text_into_clips(test))
