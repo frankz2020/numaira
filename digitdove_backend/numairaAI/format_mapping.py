@@ -3,9 +3,10 @@ from dashscope import Generation
 import os
 api_key = os.getenv("API_KEY")
 def format_maps(old_excel_value, old_doc_value, new_excel_value):
+    #we assume 
     prompt = (
         f"请根据\n'{old_excel_value}'到'{old_doc_value}'的格式变化逻辑"
-        f"给出'{new_excel_value}'根据同样的变换逻辑会生成的字段。"
+        f"给出'{new_excel_value}'根据同样的变换逻辑会生成的字段，注意理解数字单位，要保持表值一样"
     )
 
     messages = [
