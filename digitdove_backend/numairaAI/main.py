@@ -11,31 +11,36 @@ import os
 api_key = os.getenv("API_KEY")
 
 
+print("I am called")
+
 # return a list of lists with the old value and the new value
 def numberMappingFromExcelToWord(word_value, old_excel_value, new_excel_value):
+
+    if not word_value or not old_excel_value or not new_excel_value:
+        # Handle the case where any of the inputs are None or empty
+        return []
 
     clips_file = "clips.txt"
 
     # extracted_text = extract_text_from_word(word_value)
     extracted_text = word_value
-    clips = en_split_text_into_clips(extracted_text) 
-    #clips = cn_split_text_into_clips(extracted_text)  chinese ver
+    clips = en_split_text_into_clips(extracted_text)
+    # clips = cn_split_text_into_clips(extracted_text)  # Chinese version
     store_clips_to_file(clips, clips_file)
 
     query_embedding = embed_text(old_excel_value)
 
     relevant_clips = find_relevant_clips(clips, query_embedding, embed_text)
 
+    if not relevant_clips:
+        # Handle the case where relevant_clips is None or empty
+        return []
+
     exact_words = identify_exact_words(relevant_clips, old_excel_value, api_key)
 
-    print("Relevant clips found in the Word file:")
-    for clip, similarity in relevant_clips:
-        print(f"Clip: {clip}\nSimilarity: {similarity}\n")
-
-    # print("revenue_number:"+revenue_number)
-    print("Exact words related to the revenue number:")
-    print(exact_words)
-    # print(type(exact_words))
+    if not exact_words:
+        # Handle the case where exact_words is None or empty
+        return []
 
     exact_words_list = parse_nested_list(exact_words)
     task = []
@@ -43,15 +48,11 @@ def numberMappingFromExcelToWord(word_value, old_excel_value, new_excel_value):
         temp = []
         i = i.strip()
         temp.append(i[1:-1])
-        new_value = format_maps(old_excel_value, i[1:-1], new_excel_value).strip().replace("'", "")
-        print(new_value)
-        temp.append(new_value)
-        task.append(temp)
+        new_value = format_maps(old_excel_value, i[1:-1], new_excel_value)
+        if new_value:  # Ensure new_value is not None
+            new_value = new_value.strip().replace("'", "")
+            temp.append(new_value)
+            task.append(temp) 
+    print("what's return")
+    print(task)
     return task
-
-
-# word_value = 'old.docx'
-# old_excel_value = " 10,811,255"
-# new_excel_value = " 10,911,255"
-
-# numberMappingFromExcelToWord(word_value, old_excel_value, new_excel_value)
