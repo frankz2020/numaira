@@ -4,7 +4,7 @@ import { useTheme } from "@/app/providers/ThemeContext";
 import { useFormat } from "@/app/providers/FormatContext";
 import StepHeader from "@/app/components/StepHeader";
 import UploadSVG from "@/app/assets/upload.svg";
-import styled from "styled-components";
+import styled, { css, keyframes } from "styled-components";
 import PDFimage from "../../assets/placeholder/pdfFrame.svg";
 import XLSXimage from "../../assets/placeholder/xlsxFrame.svg";
 import DOCXimage from "../../assets/placeholder/docxFrame.svg";
@@ -12,6 +12,10 @@ import CloseIcon from "../../assets/close.svg";
 import mammoth from "mammoth";
 import { read as XLSXRead, utils as XLSXUtil } from "xlsx";
 import { useGlobalContext } from "@/app/providers/GlobalContext";
+import SyncSpaceSVG from "../../assets/syncSpace.svg";
+import { Document, Packer, Paragraph, TextRun } from "docx";
+import assert from "assert";
+import { saveAs } from "file-saver";
 enum SyncSpaceStep {
   TargetFile,
   AssociatedData,
@@ -41,6 +45,36 @@ const FileVisualDiv = styled.div<{ dotted: boolean; theme: any }>`
       ? "2px dotted " + props.theme.neutral1000
       : "2px solid " + props.theme.neutral100};
   background-color: ${(props) => props.theme.neutral100} !important;
+`;
+
+const pulse = (color: string) => keyframes`
+0% {
+  transform: scale(0.95);
+  box-shadow: 0 0 0 0 ${color};
+}
+70% {
+  transform: scale(1);
+  box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+}
+100% {
+  transform: scale(0.95);
+  box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+}
+`;
+
+// Styled component using the dynamic keyframes
+const GenerateButton = styled.div<{ theme: any; format: any }>`
+  background: ${(props) => props.theme.brand500};
+  border-radius: ${(props) => props.format.roundmd};
+  margin: 10px;
+  box-shadow: ${(props) => "0 0 0 0 " + props.theme.brand500};
+  transform: scale(1);
+  animation: ${(props) =>
+    css`
+      ${pulse(props.theme.brand500)} 2s infinite
+    `};
+  cursor: pointer;
+  color: ${(props) => props.theme.neutral};
 `;
 
 const getPlaceHolder = (name: string) => {
@@ -82,8 +116,10 @@ const SyncSpace = () => {
   const { theme } = useTheme();
   const { backendUrl } = useGlobalContext();
   const [currentStep, setCurrentStep] = useState(SyncSpaceStep.TargetFile);
+
   const [targetFile, setTargetFile] = useState<File | null>(null);
   const [targetFileText, setTargetFileText] = useState<string | null>(null);
+  const [targetHtmlContent, setTargetHtmlContent] = useState<string>("");
 
   const [associatedData, setAssociatedData] = useState<File | null>(null);
   const [associatedDataValue, setAssociatedDataValue] = useState<any[] | null>(
@@ -112,12 +148,39 @@ const SyncSpace = () => {
         throw new Error("Failed to send data to backend");
       }
       const results = await response.json(); // Await the JSON parsing
-
+      replaceTextInDocx(results)
       console.log("Data sent to backend successfully");
       console.log("Results:", results); // Log the returned data
     } catch (error) {
       console.error("Error sending data to backend:", error);
     }
+  };
+
+  const replaceTextInDocx = async (replacements: string[][]) => {
+    assert(targetFileText != null);
+    let updatedText = targetFileText;
+    replacements.forEach(([previousValue, newValue]) => {
+      const regex = new RegExp(previousValue, "g");
+      updatedText = updatedText.replace(regex, newValue);
+    });
+
+    // Create a new document with the updated text
+    const doc = new Document({
+      sections: [
+        {
+          properties: {},
+          children: updatedText.split("\n").map(
+            (para) =>
+              new Paragraph({
+                children: [new TextRun(para)],
+              })
+          ),
+        },
+      ],
+    });
+
+    const blob = await Packer.toBlob(doc);
+    saveAs(blob, "updated_document.docx");
   };
 
   return (
@@ -152,10 +215,15 @@ const SyncSpace = () => {
                 try {
                   const arrayBuffer = await file.arrayBuffer();
                   const result = await mammoth.extractRawText({ arrayBuffer });
+                  const { value: html, messages } = await mammoth.convertToHtml(
+                    { arrayBuffer }
+                  );
                   const text = result.value;
+
                   setTargetFileText(text);
+                  setTargetHtmlContent(html);
                   // Now you can send the text to your backend
-                  //   sendTextToBackend(text);
+
                 } catch (error) {
                   console.error("Error reading .docx file:", error);
                 }
@@ -167,7 +235,7 @@ const SyncSpace = () => {
               <div className="flex justify-start gap-2">
                 <div>{targetFile.name}</div>
                 <div> | </div>
-                <div>{targetFile.size}</div>
+                <div>{(targetFile.size / 1024).toFixed(2)} KB</div>
               </div>
 
               <div>x</div>
@@ -192,8 +260,6 @@ const SyncSpace = () => {
                   const data = await readExcelFile(file, true);
                   setAssociatedDataValue(data);
                   console.log("Extracted data:", data);
-                  // Now you can send the data to your backend
-                  // sendToBackend({ type: 'xlsx', content: data });
                 } catch (error) {
                   console.error("Error reading .xlsx file:", error);
                 }
@@ -205,7 +271,7 @@ const SyncSpace = () => {
               <div className="flex justify-start gap-2">
                 <div>{associatedData.name}</div>
                 <div> | </div>
-                <div>{associatedData.size}</div>
+                <div>{(associatedData.size / 1024).toFixed(2)} KB</div>
               </div>
 
               <div>x</div>
@@ -229,8 +295,6 @@ const SyncSpace = () => {
                   const data = await readExcelFile(file, true);
                   console.log("Extracted data:", data);
                   setNewDataValue(data);
-                  // Now you can send the data to your backend
-                  // sendToBackend({ type: 'xlsx', content: data });
                 } catch (error) {
                   console.error("Error reading .xlsx file:", error);
                 }
@@ -242,7 +306,7 @@ const SyncSpace = () => {
               <div className="flex justify-start gap-2">
                 <div>{newData.name}</div>
                 <div> | </div>
-                <div>{newData.size}</div>
+                <div>{(newData.size / 1024).toFixed(2)} KB</div>
               </div>
 
               <div>x</div>
@@ -266,14 +330,18 @@ const SyncSpace = () => {
                 borderBottomRightRadius: format.roundmd,
               }}
             >
-              <div
+              <GenerateButton
+                format={format}
+                theme={theme}
                 onClick={async () => {
                   await sendToBackend();
                   setCurrentStep(currentStep + 1);
                 }}
+                className="px-3 py-2 m-4 flex gap-1"
               >
-                Generate !
-              </div>
+                <SyncSpaceSVG width={25} height={25} fill={theme.neutral} />
+                Generate
+              </GenerateButton>
             </div>
           )}
           <StepHeader
