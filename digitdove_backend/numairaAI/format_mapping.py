@@ -1,7 +1,9 @@
-
 from dashscope import Generation
 import os
+import ast
+
 api_key = os.getenv("API_KEY")
+
 def format_maps(old_excel_value, old_doc_value, new_excel_value):
     #we assume 
     prompt = (
@@ -17,41 +19,47 @@ def format_maps(old_excel_value, old_doc_value, new_excel_value):
         model="qwen-max",
         messages=messages,
         result_format='message',
-        api_key= api_key
+        api_key=api_key
     )
     
     exact_words = None
-    if isinstance(response, dict) and 'output' in response:
+    if response and isinstance(response, dict) and 'output' in response:
         output = response['output']
-        if 'choices' in output:
+        if isinstance(output, dict) and 'choices' in output:
             for choice in output['choices']:
                 if 'message' in choice and 'content' in choice['message']:
                     exact_words = choice['message']['content']
                     break
     return exact_words
-
 def parse_nested_list(s):
-    # 去掉最外层的方括号
     s = s[1:-1]
     
     result = []
     temp = ""
     nested_level = 0
+    inside_quotes = False
     
     for char in s:
         if char == '[':
-            if nested_level > 0:
+            if nested_level > 0 or inside_quotes:
                 temp += char
             nested_level += 1
         elif char == ']':
             nested_level -= 1
-            temp+="]"
             if nested_level == 0:
                 result.append(temp.strip())
                 temp = ""
             else:
                 temp += char
-        if nested_level > 0:
+        elif char == ',' and nested_level == 0:
+            if temp.strip():
+                result.append(temp.strip())
+                temp = ""
+        else:
             temp += char
     
+    if temp.strip():
+        result.append(temp.strip())
+    
     return result
+
