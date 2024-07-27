@@ -56,7 +56,7 @@ const StepHeader = (props: StepHeaderProps) => {
           color: atStage
             ? theme.neutral
             : finished
-            ? theme.neutra500
+            ? theme.brand500
             : theme.neutral700,
         }}
       >
