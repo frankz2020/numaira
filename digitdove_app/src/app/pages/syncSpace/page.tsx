@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useTheme } from "@/app/providers/ThemeContext";
 import { useFormat } from "@/app/providers/FormatContext";
 import StepHeader from "@/app/components/StepHeader";
-import UploadSVG from "@/app/assets/upload.svg";
+import UploadButton from "./uploadButton";
 import styled, { css, keyframes } from "styled-components";
 import PDFimage from "../../assets/placeholder/pdfFrame.svg";
 import XLSXimage from "../../assets/placeholder/xlsxFrame.svg";
@@ -13,9 +13,15 @@ import mammoth from "mammoth";
 import { read as XLSXRead, utils as XLSXUtil } from "xlsx";
 import { useGlobalContext } from "@/app/providers/GlobalContext";
 import SyncSpaceSVG from "../../assets/syncSpace.svg";
-import { Document, Packer, Paragraph, TextRun } from "docx";
+import { Document, Packer, Paragraph, TextRun, WidthType } from "docx";
 import assert from "assert";
 import { saveAs } from "file-saver";
+import SyncArrowSVG from "./SyncArrow.svg";
+import DocumentSVG from "./documentSVG.svg";
+import CompleteSVG from "./completeSVG.svg";
+import LogoSVG from "../../assets/logo.svg";
+import { VerticalArrow, HorizontalArrow } from "./styled";
+import ProgressBar from "@/app/components/progressBar";
 enum SyncSpaceStep {
   TargetFile,
   AssociatedData,
@@ -33,18 +39,38 @@ const FileDisplayContainer = styled.div`
   background-color: ${(props) => props.theme.neutral};
 `;
 
-const FileVisualDiv = styled.div<{ dotted: boolean; theme: any }>`
-  max-width: 250px;
-  min-width: 150px;
+const FileVisualDiv = styled.div<{
+  dotted: boolean;
+  theme: any;
+  opacity: number;
+  borderColor?: string | null;
+}>`
+  max-width: 280px;
+  min-width: 200px;
   width: 25%;
   height: auto;
+  min-height: 220px;
   align-items: center;
   border-radius: 8px;
+  opacity: ${(props) => props.opacity};
   border: ${(props) =>
     props.dotted
       ? "2px dotted " + props.theme.neutral1000
       : "2px solid " + props.theme.neutral100};
   background-color: ${(props) => props.theme.neutral100} !important;
+`;
+
+const LoadingNumariaVisualDiv = styled.div`
+  max-width: 280px;
+  min-width: 200px;
+  width: 25%;
+  height: auto;
+  min-height: 220px;
+  display: flex; 
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+   background-color: ${(props) => props.theme.neutral300} !important;
 `;
 
 const pulse = (color: string) => keyframes`
@@ -77,6 +103,30 @@ const GenerateButton = styled.div<{ theme: any; format: any }>`
   color: ${(props) => props.theme.neutral};
 `;
 
+const VisualPlaceholder = ({ text }: { text: string }) => {
+  const { theme } = useTheme();
+  return (
+    <div
+      className="flex items-center justify-center"
+      style={{
+        maxWidth: " 280px",
+        minWidth: "200px",
+        width: "25%",
+        height: "auto",
+        minHeight: "240px",
+        alignItems: "center",
+        borderRadius: "8px",
+        border: "2px dotted " + theme.neutral1000,
+      }}
+    >
+      <div className="flex flex-col items-center">
+        <DocumentSVG />
+        {text}
+      </div>
+    </div>
+  );
+};
+
 const getPlaceHolder = (name: string) => {
   if (name.split(".").pop() === "pdf") {
     return <PDFimage />;
@@ -86,6 +136,17 @@ const getPlaceHolder = (name: string) => {
   }
   if (name.split(".").pop() === "xlsx") {
     return <XLSXimage />;
+  }
+};
+
+const Arrow: React.FC<{ direction: string; theme: any }> = ({
+  direction,
+  theme,
+}) => {
+  if (direction === "up" || direction === "down") {
+    return <VerticalArrow direction={direction} theme={theme} />;
+  } else {
+    return <HorizontalArrow direction={direction} theme={theme} />;
   }
 };
 
@@ -129,6 +190,13 @@ const SyncSpace = () => {
   const [newData, setNewData] = useState<File | null>(null);
   const [newDataValue, setNewDataValue] = useState<any[] | null>(null);
 
+  enum generationProcessStage {
+    Prepare,
+    Start,
+    Finish,
+  }
+  const [generationProcess, setGenerationProcess] =
+    useState<generationProcessStage>(generationProcessStage.Prepare);
   const sendToBackend = async () => {
     try {
       const response = await fetch(backendUrl + "/ai/mapExcelNumberToWord", {
@@ -148,7 +216,7 @@ const SyncSpace = () => {
         throw new Error("Failed to send data to backend");
       }
       const results = await response.json(); // Await the JSON parsing
-      replaceTextInDocx(results)
+      replaceTextInDocx(results.results);
       console.log("Data sent to backend successfully");
       console.log("Results:", results); // Log the returned data
     } catch (error) {
@@ -156,14 +224,20 @@ const SyncSpace = () => {
     }
   };
 
-  const replaceTextInDocx = async (replacements: string[][]) => {
+  const replaceTextInDocx = async (replacements: string[][][]) => {
     assert(targetFileText != null);
+  
+    // Flatten the array of arrays of replacements into a single array of pairs
+    const flatReplacements = replacements.flat();
+  
     let updatedText = targetFileText;
-    replacements.forEach(([previousValue, newValue]) => {
+  
+    // Replace text based on the pairs in flatReplacements
+    flatReplacements.forEach(([previousValue, newValue]) => {
       const regex = new RegExp(previousValue, "g");
       updatedText = updatedText.replace(regex, newValue);
     });
-
+  
     // Create a new document with the updated text
     const doc = new Document({
       sections: [
@@ -178,7 +252,8 @@ const SyncSpace = () => {
         },
       ],
     });
-
+  
+    // Convert the document to a Blob and trigger a download
     const blob = await Packer.toBlob(doc);
     saveAs(blob, "updated_document.docx");
   };
@@ -223,7 +298,6 @@ const SyncSpace = () => {
                   setTargetFileText(text);
                   setTargetHtmlContent(html);
                   // Now you can send the text to your backend
-
                 } catch (error) {
                   console.error("Error reading .docx file:", error);
                 }
@@ -232,7 +306,7 @@ const SyncSpace = () => {
           )}
           {targetFile && (
             <FileDisplayContainer theme={theme}>
-              <div className="flex justify-start gap-2">
+              <div className="flex justify-start gap-2 flex-wrap">
                 <div>{targetFile.name}</div>
                 <div> | </div>
                 <div>{(targetFile.size / 1024).toFixed(2)} KB</div>
@@ -268,7 +342,7 @@ const SyncSpace = () => {
           )}
           {associatedData && (
             <FileDisplayContainer theme={theme}>
-              <div className="flex justify-start gap-2">
+              <div className="flex justify-start gap-2 flex-wrap">
                 <div>{associatedData.name}</div>
                 <div> | </div>
                 <div>{(associatedData.size / 1024).toFixed(2)} KB</div>
@@ -303,7 +377,7 @@ const SyncSpace = () => {
           )}
           {newData && (
             <FileDisplayContainer theme={theme}>
-              <div className="flex justify-start gap-2">
+              <div className="flex justify-start gap-2 flex-wrap">
                 <div>{newData.name}</div>
                 <div> | </div>
                 <div>{(newData.size / 1024).toFixed(2)} KB</div>
@@ -322,7 +396,7 @@ const SyncSpace = () => {
           />
           {currentStep == SyncSpaceStep.Generate && (
             <div
-              className=" items-center flex flex-col justify-center p-5"
+              className=" items-center flex flex-col justify-center p-5 "
               style={{
                 backgroundColor: theme.neutral,
                 border: "2px solid " + theme.brand500,
@@ -334,16 +408,30 @@ const SyncSpace = () => {
                 format={format}
                 theme={theme}
                 onClick={async () => {
+                  setGenerationProcess(generationProcessStage.Start);
                   await sendToBackend();
                   setCurrentStep(currentStep + 1);
+                  setGenerationProcess(generationProcessStage.Finish);
                 }}
                 className="px-3 py-2 m-4 flex gap-1"
               >
                 <SyncSpaceSVG width={25} height={25} fill={theme.neutral} />
-                Generate
+                {generationProcess == generationProcessStage.Start
+                  ? "Generating..."
+                  : "Generate"}
               </GenerateButton>
             </div>
           )}
+          {currentStep == SyncSpaceStep.ReviewExport &&
+            generationProcess == generationProcessStage.Finish && (
+              <FileDisplayContainer
+                theme={theme}
+                className="flex gap-3 justify-center"
+              >
+                <CompleteSVG />
+                Complete
+              </FileDisplayContainer>
+            )}
           <StepHeader
             order={5}
             name="Review & Export"
@@ -373,157 +461,227 @@ const SyncSpace = () => {
         </div>
       </div>
 
-      {/* visual part */}
-      {targetFile && (
+      <div
+        className="flex justify-center items-center gap-5 p-10"
+        style={{ width: "70%" }}
+      >
         <div
-          className="ms-3 items-center flex justify-center"
-          style={{ width: "70%", height: "100%" }}
+          className="flex flex-col justify-center p-4 w-100 h-100"
+          style={{ width: "100%", height: "100%" }}
         >
-          <div className="flex flex-col justify-center">
-            <div>
-              <FileVisualDiv dotted={true}>
-                <div
-                  className="p-2"
-                  style={{ backgroundColor: theme.neutral300 }}
-                >
-                  <div>{getPlaceHolder(targetFile.name)}</div>
-
+          {/* Row 1 */}
+          <div className="flex justify-center gap-10 h-100 w-100">
+            {/* Row 1.1 */}
+            <div className=" flex justify-center items-end  w-40">
+              {targetFile != null && (
+                <FileVisualDiv dotted={true} theme={theme} opacity={1}>
                   <div
-                    style={{ backgroundColor: theme.neutral100 }}
-                    className={"p-2 flex justify-between"}
+                    className="p-2 rounded"
                   >
-                    <div className="item-center">{targetFile.name}</div>
-                  </div>
-                </div>
-              </FileVisualDiv>
-            </div>
-
-            {associatedData && <div>Arrow up</div>}
-            {associatedData && (
-              <div>
-                <FileVisualDiv theme={theme} dotted={true}>
-                  <div
-                    className="p-2"
-                    style={{ backgroundColor: theme.neutral300 }}
-                  >
-                    <div>{getPlaceHolder(associatedData.name)}</div>
-
+                    <div>{getPlaceHolder(targetFile.name)}</div>
                     <div
-                      style={{ backgroundColor: theme.neutral100 }}
-                      className={"p-2 flex justify-between"}
+                      style={{
+                        backgroundColor: theme.neutral100,
+                        wordWrap: "break-word",
+                        whiteSpace: "pre-wrap",
+                        overflowWrap: "break-word",
+                      }}
+                      className="p-2"
                     >
-                      <div className="item-center">{associatedData.name}</div>
-                    </div>
-                  </div>
-                </FileVisualDiv>
-              </div>
-            )}
-          </div>
-
-          <div className="flex flex-col justify-center">
-            <div>Arrow to the right</div>
-            <span className="block"></span>
-          </div>
-
-          <div className="flex flex-col-reverse justify-center">
-            {newData && (
-              <div>
-                <FileVisualDiv theme={theme} dotted={true}>
-                  <div
-                    className="p-2"
-                    style={{ backgroundColor: theme.neutral300 }}
-                  >
-                    <div>{getPlaceHolder(newData.name)}</div>
-
-                    <div
-                      style={{ backgroundColor: theme.neutral100 }}
-                      className={"p-2 flex justify-between"}
-                    >
-                      <div className="item-center">{newData.name}</div>
-                    </div>
-                  </div>
-                </FileVisualDiv>
-              </div>
-            )}
-            {newData && <div>Arrow up</div>}
-            {targetFile && associatedData && newData && (
-              <div>
-                <FileVisualDiv theme={theme} dotted={false}>
-                  <div
-                    className="p-2"
-                    style={{ backgroundColor: theme.neutral300 }}
-                  >
-                    <div>{getPlaceHolder("new " + targetFile.name)}</div>
-
-                    <div
-                      style={{ backgroundColor: theme.neutral100 }}
-                      className={"p-2 flex justify-between"}
-                    >
-                      <div className="item-center">
-                        {"new " + targetFile.name}
+                      <div
+                        className="items-center text-sm h-100"
+                        style={{ minHeight: "40px" }}
+                      >
+                        {targetFile.name}
                       </div>
                     </div>
                   </div>
                 </FileVisualDiv>
-              </div>
-            )}
+              )}
+            </div>
+
+            {/* Row 1.2 */}
+            <div className=" flex justify-center items-center w-20">
+              {targetFile && associatedData && (
+                <Arrow theme={theme} direction="right" />
+              )}
+            </div>
+
+            {/* Row 1.3 */}
+            <div className="flex justify-center items-end w-40">
+              {targetFile && associatedData && (
+                <>
+                  {generationProcess === generationProcessStage.Prepare && (
+                    <FileVisualDiv
+                      theme={theme}
+                      dotted={false}
+                      opacity={0.5}
+                      style={{
+                        borderColor: newData ? theme.brand500 : theme.brand1000,
+                      }}
+                    >
+                      <div
+                        className="p-2"
+                      >
+                        <div>{getPlaceHolder("new " + targetFile.name)}</div>
+                        <div
+                          style={{
+                            backgroundColor: theme.neutral100,
+                            wordWrap: "break-word",
+                            whiteSpace: "pre-wrap",
+                            overflowWrap: "break-word",
+                          }}
+                          className="p-2"
+                        >
+                          <div
+                            className="items-center text-sm h-100"
+                            style={{ minHeight: "40px" }}
+                          >
+                            {"numaira output "}
+                          </div>
+                        </div>
+                      </div>
+                    </FileVisualDiv>
+                  )}
+                  {generationProcess === generationProcessStage.Start && (
+                    <LoadingNumariaVisualDiv theme={theme}>
+                      <div className="flex flex-col justify-center w-full h-full items-center p-3">
+                        <LogoSVG width={90} height={90} fill={theme.brand500} />
+                        <ProgressBar duration={5000} />
+                      </div>
+                    </LoadingNumariaVisualDiv>
+                  )}
+                  {generationProcess === generationProcessStage.Finish && (
+                    <FileVisualDiv
+                      theme={theme}
+                      dotted={false}
+                      opacity={1}
+                      style={{
+                        borderColor: theme.brand500,
+                      }}
+                    >
+                      <div
+                        className="p-2"
+                      >
+                        <div>{getPlaceHolder("new " + targetFile.name)}</div>
+                        <div
+                          style={{
+                            backgroundColor: theme.neutral100,
+                            wordWrap: "break-word",
+                            whiteSpace: "pre-wrap",
+                            overflowWrap: "break-word",
+                          }}
+                          className="p-2"
+                        >
+                          <div
+                            className="items-center text-sm h-100"
+                            style={{ minHeight: "40px" }}
+                          >
+                            {"numaira output "}
+                          </div>
+                        </div>
+                      </div>
+                    </FileVisualDiv>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Row 2 */}
+          <div className="flex  justify-center gap-10 h-20 p-4">
+            {/* Row 2.1 */}
+            <div className=" flex justify-center items-center w-40">
+              {targetFile && <Arrow theme={theme} direction="up" />}
+            </div>
+            {/* Row 2.2 */}
+            <div className=" flex justify-center items-center w-20">
+              {targetFile == null && <VisualPlaceholder text="Target File" />}
+            </div>
+
+            {/* Row 2.3 */}
+            <div className=" flex justify-center items-center w-40">
+              {targetFile && associatedData && (
+                <Arrow theme={theme} direction="up" />
+              )}
+            </div>
+          </div>
+
+          {/* Row 3 */}
+          <div className="flex  justify-center gap-10 h-100">
+            {/* Row 3.1 */}
+            <div className=" flex justify-center items-start  w-40">
+              {targetFile && (
+                <div className="flex flex-col justify-center items-center">
+                  {!associatedData ? (
+                    <VisualPlaceholder text="Associated Data" />
+                  ) : (
+                    <FileVisualDiv theme={theme} dotted={true} opacity={1}>
+                      <div
+                        className="p-2"
+                      >
+                        <div>{getPlaceHolder(associatedData.name)}</div>
+                        <div
+                          style={{
+                            backgroundColor: theme.neutral100,
+                            wordWrap: "break-word",
+                            whiteSpace: "pre-wrap",
+                            overflowWrap: "break-word",
+                          }}
+                          className="p-2"
+                        >
+                          <div
+                            className="items-center text-sm h-100"
+                            style={{ minHeight: "40px" }}
+                          >
+                            {associatedData.name}
+                          </div>
+                        </div>
+                      </div>
+                    </FileVisualDiv>
+                  )}
+                </div>
+              )}
+            </div>
+            {/* Row 3.2*/}
+            <div className=" flex justify-center items-start w-20"></div>
+            {/* Row 3.3 */}
+            <div className="flex justify-center items-start w-40">
+              {targetFile && associatedData && (
+                <div className="flex flex-col justify-center items-center">
+                  {!newData ? (
+                    <VisualPlaceholder text="New Data" />
+                  ) : (
+                    <FileVisualDiv theme={theme} dotted={true} opacity={1}>
+                      <div
+                        className="p-2"
+                      >
+                        <div>{getPlaceHolder(newData.name)}</div>
+                        <div
+                          style={{
+                            backgroundColor: theme.neutral100,
+                            wordWrap: "break-word",
+                            whiteSpace: "pre-wrap",
+                            overflowWrap: "break-word",
+                          }}
+                          className="p-2"
+                        >
+                          <div
+                            className="items-center text-sm h-100"
+                            style={{ minHeight: "40px" }}
+                          >
+                            {newData.name}
+                          </div>
+                        </div>
+                      </div>
+                    </FileVisualDiv>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      )}
-    </div>
-  );
-};
-
-type UploadButtonProps = {
-  onClick: (file: File) => void;
-  fileType: string[] | null;
-};
-const UploadButton = (props: UploadButtonProps) => {
-  const { onClick, fileType } = props;
-  const { theme } = useTheme();
-  const { format } = useFormat();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      onClick(file);
-    }
-  };
-  return (
-    <div
-      className=" items-center flex flex-col justify-center p-5"
-      style={{
-        backgroundColor: theme.neutral,
-        border: "2px dashed " + theme.neutral1000,
-        borderBottomLeftRadius: format.roundmd,
-        borderBottomRightRadius: format.roundmd,
-      }}
-    >
-      <UploadSVG />
-      <div style={{ fontWeight: 700 }}>Drop Files here</div>
-      <div style={{ color: theme.neutral700, fontSize: format.textSM }}>
-        DOCX Format up to 10MB
       </div>
-      <input
-        type="file"
-        id="fileInput"
-        accept={fileType?.toString() ?? ""}
-        style={{ display: "none" }}
-        onChange={handleFileChange}
-      />
-      <button
-        className="py-2 px-3 m-2"
-        onClick={() => document.getElementById("fileInput")?.click()}
-        style={{
-          backgroundColor: theme.brand500,
-          color: theme.neutral,
-          borderRadius: format.roundmd,
-        }}
-      >
-        Select File
-      </button>
     </div>
   );
 };
