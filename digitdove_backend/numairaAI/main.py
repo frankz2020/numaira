@@ -34,7 +34,6 @@ def numberMappingFromExcelToWord(word_value, old_excel_value, new_excel_value):
     relevant_clips = find_relevant_clips(clips, query_embedding, embed_text)
 
     if not relevant_clips:
-        # Handle the case where relevant_clips is None or empty
         return
 
     exact_words = identify_exact_words(relevant_clips, old_excel_value, api_key) #if does not exist, it returns ['']
@@ -43,6 +42,8 @@ def numberMappingFromExcelToWord(word_value, old_excel_value, new_excel_value):
         # Handle the case where exact_words is None or empty
         return []
     exact_words_list = parse_nested_list(exact_words)
+    if not exact_words_list:
+        return
     task = []
     for i in exact_words_list:
         temp = []

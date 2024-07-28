@@ -32,6 +32,8 @@ def format_maps(old_excel_value, old_doc_value, new_excel_value):
                     break
     return exact_words
 def parse_nested_list(s):
+    if not s:
+        return []
     s = s[1:-1]
     
     result = []
