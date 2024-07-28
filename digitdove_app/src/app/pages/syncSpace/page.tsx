@@ -66,11 +66,11 @@ const LoadingNumariaVisualDiv = styled.div`
   width: 25%;
   height: auto;
   min-height: 220px;
-  display: flex; 
+  display: flex;
   justify-content: center;
   align-items: center;
   border-radius: 8px;
-   background-color: ${(props) => props.theme.neutral300} !important;
+  background-color: ${(props) => props.theme.neutral300} !important;
 `;
 
 const pulse = (color: string) => keyframes`
@@ -216,28 +216,45 @@ const SyncSpace = () => {
         throw new Error("Failed to send data to backend");
       }
       const results = await response.json(); // Await the JSON parsing
-      replaceTextInDocx(results.results);
       console.log("Data sent to backend successfully");
       console.log("Results:", results); // Log the returned data
+      replaceTextInDocx(results.results);
     } catch (error) {
       console.error("Error sending data to backend:", error);
     }
   };
 
+  // Function to replace text in a DOCX document
   const replaceTextInDocx = async (replacements: string[][][]) => {
+    // Check if the parent array is not empty
+    if (!replacements || replacements.length === 0) {
+      console.error("The replacements array is empty.");
+      return;
+    }
+
     assert(targetFileText != null);
-  
+
     // Flatten the array of arrays of replacements into a single array of pairs
     const flatReplacements = replacements.flat();
-  
+    console.log("Flat replacements:", flatReplacements);
+    // Remove null values from flatReplacements
+    const filteredReplacements: any = []
+    flatReplacements.map((valuePair) => {
+      if( valuePair != null ) {
+        filteredReplacements.push(valuePair)
+      }
+    })
+    console.log("Filtered replacements:", filteredReplacements);
     let updatedText = targetFileText;
-  
-    // Replace text based on the pairs in flatReplacements
-    flatReplacements.forEach(([previousValue, newValue]) => {
+    // Replace text based on the pairs in filteredReplacements
+    filteredReplacements.forEach((valuePair: any) => {
+      const previousValue = valuePair[0];
+      const  newValue = valuePair[1];
       const regex = new RegExp(previousValue, "g");
       updatedText = updatedText.replace(regex, newValue);
     });
-  
+
+
     // Create a new document with the updated text
     const doc = new Document({
       sections: [
@@ -252,7 +269,7 @@ const SyncSpace = () => {
         },
       ],
     });
-  
+
     // Convert the document to a Blob and trigger a download
     const blob = await Packer.toBlob(doc);
     saveAs(blob, "updated_document.docx");
@@ -475,9 +492,7 @@ const SyncSpace = () => {
             <div className=" flex justify-center items-end  w-40">
               {targetFile != null && (
                 <FileVisualDiv dotted={true} theme={theme} opacity={1}>
-                  <div
-                    className="p-2 rounded"
-                  >
+                  <div className="p-2 rounded">
                     <div>{getPlaceHolder(targetFile.name)}</div>
                     <div
                       style={{
@@ -520,9 +535,7 @@ const SyncSpace = () => {
                         borderColor: newData ? theme.brand500 : theme.brand1000,
                       }}
                     >
-                      <div
-                        className="p-2"
-                      >
+                      <div className="p-2">
                         <div>{getPlaceHolder("new " + targetFile.name)}</div>
                         <div
                           style={{
@@ -560,9 +573,7 @@ const SyncSpace = () => {
                         borderColor: theme.brand500,
                       }}
                     >
-                      <div
-                        className="p-2"
-                      >
+                      <div className="p-2">
                         <div>{getPlaceHolder("new " + targetFile.name)}</div>
                         <div
                           style={{
@@ -617,9 +628,7 @@ const SyncSpace = () => {
                     <VisualPlaceholder text="Associated Data" />
                   ) : (
                     <FileVisualDiv theme={theme} dotted={true} opacity={1}>
-                      <div
-                        className="p-2"
-                      >
+                      <div className="p-2">
                         <div>{getPlaceHolder(associatedData.name)}</div>
                         <div
                           style={{
@@ -653,9 +662,7 @@ const SyncSpace = () => {
                     <VisualPlaceholder text="New Data" />
                   ) : (
                     <FileVisualDiv theme={theme} dotted={true} opacity={1}>
-                      <div
-                        className="p-2"
-                      >
+                      <div className="p-2">
                         <div>{getPlaceHolder(newData.name)}</div>
                         <div
                           style={{
