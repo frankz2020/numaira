@@ -148,7 +148,6 @@ const SyncSpace = () => {
                   <FileDiv theme={theme} key={index} className={"p-2 m-2"}>
                     <div
                       className="p-2"
-                      style={{ backgroundColor: theme.neutral300 }}
                     >
                       <div>{getPlaceHolder(file.name)}</div>
 

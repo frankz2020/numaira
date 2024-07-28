@@ -44,3 +44,8 @@ def mapExcelNumberToWord():
 
 def process_mapping(wordValue, oldExcelValue, newExcelValue):
     return numberMappingFromExcelToWord(wordValue, oldExcelValue, newExcelValue)
+
+
+@aiRoutes.route("/mapJsonExcelNumberToWord", methods=["POST"])
+def mapJsonExcelNumberToWord():
+     return jsonify({"results": "fuck"}), 200

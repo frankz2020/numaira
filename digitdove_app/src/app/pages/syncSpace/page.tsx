@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useTheme } from "@/app/providers/ThemeContext";
 import { useFormat } from "@/app/providers/FormatContext";
 import StepHeader from "@/app/components/StepHeader";
-import UploadSVG from "@/app/assets/upload.svg";
+import UploadButton from "./uploadButton";
 import styled, { css, keyframes } from "styled-components";
 import PDFimage from "../../assets/placeholder/pdfFrame.svg";
 import XLSXimage from "../../assets/placeholder/xlsxFrame.svg";
@@ -18,6 +18,10 @@ import assert from "assert";
 import { saveAs } from "file-saver";
 import SyncArrowSVG from "./SyncArrow.svg";
 import DocumentSVG from "./documentSVG.svg";
+import CompleteSVG from "./completeSVG.svg";
+import LogoSVG from "../../assets/logo.svg";
+import { VerticalArrow, HorizontalArrow } from "./styled";
+import ProgressBar from "@/app/components/progressBar";
 enum SyncSpaceStep {
   TargetFile,
   AssociatedData,
@@ -54,6 +58,19 @@ const FileVisualDiv = styled.div<{
       ? "2px dotted " + props.theme.neutral1000
       : "2px solid " + props.theme.neutral100};
   background-color: ${(props) => props.theme.neutral100} !important;
+`;
+
+const LoadingNumariaVisualDiv = styled.div`
+  max-width: 280px;
+  min-width: 200px;
+  width: 25%;
+  height: auto;
+  min-height: 220px;
+  display: flex; 
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+   background-color: ${(props) => props.theme.neutral300} !important;
 `;
 
 const pulse = (color: string) => keyframes`
@@ -110,31 +127,6 @@ const VisualPlaceholder = ({ text }: { text: string }) => {
   );
 };
 
-const getSyncArrow = (direction: string) => {
-  let rotate = 0;
-  if (direction === "up") rotate = 0;
-  if (direction === "down") rotate = 180;
-  if (direction === "right") rotate = 90;
-  if (direction === "left") rotate = -90;
-
-  return (
-    <div
-      className="flex items-center justify-center"
-      style={{ width: "100%", height: "100%" }}
-    >
-      <SyncArrowSVG
-        style={{
-          transform: `rotate(${rotate}deg)`,
-          maxWidth: "100%",
-          maxHeight: "100%",
-          objectFit: "contain",
-          margin: "auto",
-        }}
-      />
-    </div>
-  );
-};
-
 const getPlaceHolder = (name: string) => {
   if (name.split(".").pop() === "pdf") {
     return <PDFimage />;
@@ -147,64 +139,11 @@ const getPlaceHolder = (name: string) => {
   }
 };
 
-const HorizontalArrow = styled.div<{ direction: string }>`
-  --c: ${(props) => props.theme.neutral700}; /* color */
-  --r: 5px; /* circle size */
-  --s: 5px; /* space between circles */
-  --size: 15px; /* arrow tip size */
-
-  height: 6px;
-  width: 100%; /* Adjust width as needed */
-  display: inline-block;
-  position: relative;
-  --g: radial-gradient(circle closest-side, var(--c) 85%, transparent);
-  background: var(--g) 0 calc(var(--s) / -2) / var(--r) calc(var(--r) + var(--s))
-      repeat-y,
-    var(--g) calc(var(--s) / -2) 0 / calc(var(--r) + var(--s)) var(--r) repeat-x;
-
-  &::after {
-    content: "";
-    position: absolute;
-    left: ${(props) => (props.direction === 'left' ? '0' : '100%')};
-    top: 50%;
-    width: var(--size);
-    height: var(--size);
-    transform: translate(-50%, -50%) rotate(${(props) => (props.direction === 'left' ? '-90deg' : '90deg')});
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-    background: var(--c);
-  }
-`;
-
-const VerticalArrow = styled.div<{ direction: string }>`
-  --c: ${(props) => props.theme.neutral700}; /* color */
-  --r: 5px; /* circle size */
-  --s: 5px; /* space between circles */
-  --size: 15px; /* arrow tip size */
-
-  width: 6px;
-  height: 100%; /* Adjust height as needed */
-  display: inline-block;
-  position: relative;
-  --g: radial-gradient(circle closest-side, var(--c) 85%, transparent);
-  background: var(--g) calc(var(--s) / -2) 0 / calc(var(--r) + var(--s))
-      var(--r) repeat-x,
-    var(--g) 0 calc(var(--s) / -2) / var(--r) calc(var(--r) + var(--s)) repeat-y;
-
-  &::after {
-    content: "";
-    position: absolute;
-    top: ${(props) => (props.direction === 'up' ? '0' : '100%')};
-    left: 50%;
-    width: var(--size);
-    height: var(--size);
-    transform: translate(-50%, -50%) rotate(${(props) => (props.direction === 'up' ? '0deg' : '180deg')});
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-    background: var(--c);
-  }
-`;
-
-const Arrow: React.FC<{ direction: string; theme: any }> = ({ direction, theme }) => {
-  if (direction === 'up' || direction === 'down') {
+const Arrow: React.FC<{ direction: string; theme: any }> = ({
+  direction,
+  theme,
+}) => {
+  if (direction === "up" || direction === "down") {
     return <VerticalArrow direction={direction} theme={theme} />;
   } else {
     return <HorizontalArrow direction={direction} theme={theme} />;
@@ -251,7 +190,13 @@ const SyncSpace = () => {
   const [newData, setNewData] = useState<File | null>(null);
   const [newDataValue, setNewDataValue] = useState<any[] | null>(null);
 
-  const [startedGeneration, setStartedGeneration] = useState(false);
+  enum generationProcessStage {
+    Prepare,
+    Start,
+    Finish,
+  }
+  const [generationProcess, setGenerationProcess] =
+    useState<generationProcessStage>(generationProcessStage.Prepare);
   const sendToBackend = async () => {
     try {
       const response = await fetch(backendUrl + "/ai/mapExcelNumberToWord", {
@@ -271,7 +216,7 @@ const SyncSpace = () => {
         throw new Error("Failed to send data to backend");
       }
       const results = await response.json(); // Await the JSON parsing
-      replaceTextInDocx(results);
+      replaceTextInDocx(results.results);
       console.log("Data sent to backend successfully");
       console.log("Results:", results); // Log the returned data
     } catch (error) {
@@ -279,14 +224,20 @@ const SyncSpace = () => {
     }
   };
 
-  const replaceTextInDocx = async (replacements: string[][]) => {
+  const replaceTextInDocx = async (replacements: string[][][]) => {
     assert(targetFileText != null);
+  
+    // Flatten the array of arrays of replacements into a single array of pairs
+    const flatReplacements = replacements.flat();
+  
     let updatedText = targetFileText;
-    replacements.forEach(([previousValue, newValue]) => {
+  
+    // Replace text based on the pairs in flatReplacements
+    flatReplacements.forEach(([previousValue, newValue]) => {
       const regex = new RegExp(previousValue, "g");
       updatedText = updatedText.replace(regex, newValue);
     });
-
+  
     // Create a new document with the updated text
     const doc = new Document({
       sections: [
@@ -301,7 +252,8 @@ const SyncSpace = () => {
         },
       ],
     });
-
+  
+    // Convert the document to a Blob and trigger a download
     const blob = await Packer.toBlob(doc);
     saveAs(blob, "updated_document.docx");
   };
@@ -456,16 +408,30 @@ const SyncSpace = () => {
                 format={format}
                 theme={theme}
                 onClick={async () => {
+                  setGenerationProcess(generationProcessStage.Start);
                   await sendToBackend();
                   setCurrentStep(currentStep + 1);
+                  setGenerationProcess(generationProcessStage.Finish);
                 }}
                 className="px-3 py-2 m-4 flex gap-1"
               >
                 <SyncSpaceSVG width={25} height={25} fill={theme.neutral} />
-                {startedGeneration ? "Generating..." : "Generate"} 
+                {generationProcess == generationProcessStage.Start
+                  ? "Generating..."
+                  : "Generate"}
               </GenerateButton>
             </div>
           )}
+          {currentStep == SyncSpaceStep.ReviewExport &&
+            generationProcess == generationProcessStage.Finish && (
+              <FileDisplayContainer
+                theme={theme}
+                className="flex gap-3 justify-center"
+              >
+                <CompleteSVG />
+                Complete
+              </FileDisplayContainer>
+            )}
           <StepHeader
             order={5}
             name="Review & Export"
@@ -499,7 +465,10 @@ const SyncSpace = () => {
         className="flex justify-center items-center gap-5 p-10"
         style={{ width: "70%" }}
       >
-        <div className="flex flex-col justify-center p-4 w-100 h-100"  style={{width: '100%', height: '100%'}}>
+        <div
+          className="flex flex-col justify-center p-4 w-100 h-100"
+          style={{ width: "100%", height: "100%" }}
+        >
           {/* Row 1 */}
           <div className="flex justify-center gap-10 h-100 w-100">
             {/* Row 1.1 */}
@@ -507,8 +476,7 @@ const SyncSpace = () => {
               {targetFile != null && (
                 <FileVisualDiv dotted={true} theme={theme} opacity={1}>
                   <div
-                    className="p-2"
-                    style={{ backgroundColor: theme.neutral300 }}
+                    className="p-2 rounded"
                   >
                     <div>{getPlaceHolder(targetFile.name)}</div>
                     <div
@@ -542,43 +510,86 @@ const SyncSpace = () => {
             {/* Row 1.3 */}
             <div className="flex justify-center items-end w-40">
               {targetFile && associatedData && (
-                <FileVisualDiv
-                  theme={theme}
-                  dotted={false}
-                  opacity={0.5}
-                  style={{
-                    borderColor: newData ? theme.brand500 : theme.brand1000,
-                  }}
-                >
-                  <div
-                    className="p-2"
-                    style={{ backgroundColor: theme.neutral300 }}
-                  >
-                    <div>{getPlaceHolder("new " + targetFile.name)}</div>
-                    <div
+                <>
+                  {generationProcess === generationProcessStage.Prepare && (
+                    <FileVisualDiv
+                      theme={theme}
+                      dotted={false}
+                      opacity={0.5}
                       style={{
-                        backgroundColor: theme.neutral100,
-                        wordWrap: "break-word",
-                        whiteSpace: "pre-wrap",
-                        overflowWrap: "break-word",
+                        borderColor: newData ? theme.brand500 : theme.brand1000,
                       }}
-                      className="p-2"
                     >
                       <div
-                        className="items-center text-sm h-100"
-                        style={{ minHeight: "40px" }}
+                        className="p-2"
                       >
-                        {"numaira output "}
+                        <div>{getPlaceHolder("new " + targetFile.name)}</div>
+                        <div
+                          style={{
+                            backgroundColor: theme.neutral100,
+                            wordWrap: "break-word",
+                            whiteSpace: "pre-wrap",
+                            overflowWrap: "break-word",
+                          }}
+                          className="p-2"
+                        >
+                          <div
+                            className="items-center text-sm h-100"
+                            style={{ minHeight: "40px" }}
+                          >
+                            {"numaira output "}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </FileVisualDiv>
+                    </FileVisualDiv>
+                  )}
+                  {generationProcess === generationProcessStage.Start && (
+                    <LoadingNumariaVisualDiv theme={theme}>
+                      <div className="flex flex-col justify-center w-full h-full items-center p-3">
+                        <LogoSVG width={90} height={90} fill={theme.brand500} />
+                        <ProgressBar duration={5000} />
+                      </div>
+                    </LoadingNumariaVisualDiv>
+                  )}
+                  {generationProcess === generationProcessStage.Finish && (
+                    <FileVisualDiv
+                      theme={theme}
+                      dotted={false}
+                      opacity={1}
+                      style={{
+                        borderColor: theme.brand500,
+                      }}
+                    >
+                      <div
+                        className="p-2"
+                      >
+                        <div>{getPlaceHolder("new " + targetFile.name)}</div>
+                        <div
+                          style={{
+                            backgroundColor: theme.neutral100,
+                            wordWrap: "break-word",
+                            whiteSpace: "pre-wrap",
+                            overflowWrap: "break-word",
+                          }}
+                          className="p-2"
+                        >
+                          <div
+                            className="items-center text-sm h-100"
+                            style={{ minHeight: "40px" }}
+                          >
+                            {"numaira output "}
+                          </div>
+                        </div>
+                      </div>
+                    </FileVisualDiv>
+                  )}
+                </>
               )}
             </div>
           </div>
 
           {/* Row 2 */}
-          <div className="flex  justify-center gap-10 h-20 p-4" >
+          <div className="flex  justify-center gap-10 h-20 p-4">
             {/* Row 2.1 */}
             <div className=" flex justify-center items-center w-40">
               {targetFile && <Arrow theme={theme} direction="up" />}
@@ -608,7 +619,6 @@ const SyncSpace = () => {
                     <FileVisualDiv theme={theme} dotted={true} opacity={1}>
                       <div
                         className="p-2"
-                        style={{ backgroundColor: theme.neutral300 }}
                       >
                         <div>{getPlaceHolder(associatedData.name)}</div>
                         <div
@@ -645,7 +655,6 @@ const SyncSpace = () => {
                     <FileVisualDiv theme={theme} dotted={true} opacity={1}>
                       <div
                         className="p-2"
-                        style={{ backgroundColor: theme.neutral300 }}
                       >
                         <div>{getPlaceHolder(newData.name)}</div>
                         <div
@@ -672,69 +681,6 @@ const SyncSpace = () => {
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
-};
-
-type UploadButtonProps = {
-  onClick: (file: File) => void;
-  fileType: string[] | null;
-};
-const UploadButton = (props: UploadButtonProps) => {
-  const { onClick, fileType } = props;
-  const { theme } = useTheme();
-  const { format } = useFormat();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      onClick(file);
-    }
-  };
-  return (
-    <div
-      className="p-5"
-      style={{
-        backgroundColor: theme.neutral,
-        border: "2px solid " + theme.brand500,
-        borderBottomLeftRadius: format.roundmd,
-        borderBottomRightRadius: format.roundmd,
-      }}
-    >
-      <div
-        className="p-3 items-center flex flex-col justify-center "
-        style={{
-          border: "2px dotted " + theme.neutral1000,
-          width: "100%",
-          borderRadius: format.roundmd,
-        }}
-      >
-        <UploadSVG />
-        <div style={{ fontWeight: 700 }}>Drop Files here</div>
-        <div style={{ color: theme.neutral700, fontSize: format.textSM }}>
-          DOCX Format up to 10MB
-        </div>
-        <input
-          type="file"
-          id="fileInput"
-          accept={fileType?.toString() ?? ""}
-          style={{ display: "none" }}
-          onChange={handleFileChange}
-        />
-        <button
-          className="py-2 px-3 m-2"
-          onClick={() => document.getElementById("fileInput")?.click()}
-          style={{
-            backgroundColor: theme.brand500,
-            color: theme.neutral,
-            borderRadius: format.roundmd,
-          }}
-        >
-          Select File
-        </button>
       </div>
     </div>
   );

@@ -53,7 +53,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
   const {backendUrl} = useGlobalContext()
   return (
     <CardContainer theme={theme} format={format} onClick={() => {router.push(`/template/viewTemplate?id=${templateId}`)} }>
-      <div className="p-2" style={{ backgroundColor: theme.neutral300 }}>
+      <div className="p-2">
         <div>
           <NumairaFrame />
         </div>
