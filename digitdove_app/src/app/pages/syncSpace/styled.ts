@@ -56,3 +56,34 @@ export const VerticalArrow = styled.div<{ direction: string }>`
     background: var(--c);
   }
 `;
+
+export const FileVisualDiv = styled.div<{
+  dotted: boolean;
+  theme: any;
+  opacity: number;
+  borderColor?: string | null;
+}>`
+  max-width: 280px;
+  min-width: 200px;
+  width: 25%;
+  height: auto;
+  min-height: 220px;
+  align-items: center;
+  border-radius: 8px;
+  opacity: ${(props) => props.opacity};
+  border: ${(props) =>
+    props.dotted
+      ? "2px dotted " + props.theme.neutral1000
+      : "2px solid " + props.theme.neutral100};
+  background-color: ${(props) => props.theme.neutral100} !important;
+`;
+
+
+export const FileDisplayContainer = styled.div`
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 8px;
+margin-bottom: 4px;
+background-color: ${(props) => props.theme.neutral};
+`;

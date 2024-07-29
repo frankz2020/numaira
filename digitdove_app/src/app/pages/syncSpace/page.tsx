@@ -20,8 +20,16 @@ import SyncArrowSVG from "./SyncArrow.svg";
 import DocumentSVG from "./documentSVG.svg";
 import CompleteSVG from "./completeSVG.svg";
 import LogoSVG from "../../assets/logo.svg";
-import { VerticalArrow, HorizontalArrow } from "./styled";
+import {
+  VerticalArrow,
+  HorizontalArrow,
+  FileVisualDiv,
+  FileDisplayContainer,
+} from "./styled";
 import ProgressBar from "@/app/components/progressBar";
+import PizZip from "pizzip";
+import Docxtemplater from "docxtemplater";
+import { readDocxFile } from "./utils";
 enum SyncSpaceStep {
   TargetFile,
   AssociatedData,
@@ -29,36 +37,6 @@ enum SyncSpaceStep {
   Generate,
   ReviewExport,
 }
-
-const FileDisplayContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px;
-  margin-bottom: 4px;
-  background-color: ${(props) => props.theme.neutral};
-`;
-
-const FileVisualDiv = styled.div<{
-  dotted: boolean;
-  theme: any;
-  opacity: number;
-  borderColor?: string | null;
-}>`
-  max-width: 280px;
-  min-width: 200px;
-  width: 25%;
-  height: auto;
-  min-height: 220px;
-  align-items: center;
-  border-radius: 8px;
-  opacity: ${(props) => props.opacity};
-  border: ${(props) =>
-    props.dotted
-      ? "2px dotted " + props.theme.neutral1000
-      : "2px solid " + props.theme.neutral100};
-  background-color: ${(props) => props.theme.neutral100} !important;
-`;
 
 const LoadingNumariaVisualDiv = styled.div`
   max-width: 280px;
@@ -70,7 +48,7 @@ const LoadingNumariaVisualDiv = styled.div`
   justify-content: center;
   align-items: center;
   border-radius: 8px;
-  background-color: ${(props) => props.theme.neutral300} !important;
+  background-color: ${(props) => props.theme.neutral100} !important;
 `;
 
 const pulse = (color: string) => keyframes`
@@ -172,6 +150,7 @@ const readExcelFile = (file: File, numberOnly: boolean): Promise<any[]> => {
     reader.readAsArrayBuffer(file);
   });
 };
+
 const SyncSpace = () => {
   const { format } = useFormat();
   const { theme } = useTheme();
@@ -190,6 +169,7 @@ const SyncSpace = () => {
   const [newData, setNewData] = useState<File | null>(null);
   const [newDataValue, setNewDataValue] = useState<any[] | null>(null);
 
+  const [outputFile, setOutputFile] = useState(null);
   enum generationProcessStage {
     Prepare,
     Start,
@@ -224,55 +204,57 @@ const SyncSpace = () => {
     }
   };
 
-  // Function to replace text in a DOCX document
-  const replaceTextInDocx = async (replacements: string[][][]) => {
-    // Check if the parent array is not empty
+  const replaceTextInDocx = async (replacements: string[][]) => {
+    let output: any = null;
+    let file = targetFile;
+    assert(file != null);
     if (!replacements || replacements.length === 0) {
       console.error("The replacements array is empty.");
       return;
     }
 
-    assert(targetFileText != null);
+    const arrayBuffer = await file.arrayBuffer();
 
-    // Flatten the array of arrays of replacements into a single array of pairs
+    const zip = new PizZip(arrayBuffer);
+    const doc = new Docxtemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: true,
+    });
+
     const flatReplacements = replacements.flat();
     console.log("Flat replacements:", flatReplacements);
-    // Remove null values from flatReplacements
-    const filteredReplacements: any = []
-    flatReplacements.map((valuePair) => {
-      if( valuePair != null ) {
-        filteredReplacements.push(valuePair)
-      }
-    })
-    console.log("Filtered replacements:", filteredReplacements);
-    let updatedText = targetFileText;
-    // Replace text based on the pairs in filteredReplacements
-    filteredReplacements.forEach((valuePair: any) => {
-      const previousValue = valuePair[0];
-      const  newValue = valuePair[1];
-      const regex = new RegExp(previousValue, "g");
-      updatedText = updatedText.replace(regex, newValue);
-    });
 
+    // Remove null values from flatReplacements
+    const filteredReplacements: any = [];
+    flatReplacements.map((valuePair) => {
+      if (valuePair != null) {
+        filteredReplacements.push(valuePair);
+      }
+    });
 
     // Create a new document with the updated text
-    const doc = new Document({
-      sections: [
-        {
-          properties: {},
-          children: updatedText.split("\n").map(
-            (para) =>
-              new Paragraph({
-                children: [new TextRun(para)],
-              })
-          ),
-        },
-      ],
+    filteredReplacements.forEach(([previousValue, newValue]: [any, any]) => {
+      doc.setData({ [previousValue]: newValue });
     });
 
-    // Convert the document to a Blob and trigger a download
-    const blob = await Packer.toBlob(doc);
-    saveAs(blob, "updated_document.docx");
+    try {
+      doc.render();
+    } catch (error) {
+      console.error("Error rendering document:", error);
+      throw error;
+    }
+
+    output = doc.getZip().generate({
+      type: "blob",
+      mimeType:
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    });
+    setOutputFile(output);
+  };
+
+  const donwloadUpdatedDocx = () => {
+    assert(outputFile != null);
+    saveAs(outputFile, "updated_document.docx");
   };
 
   return (
@@ -282,9 +264,15 @@ const SyncSpace = () => {
         style={{ width: "30%", backgroundColor: theme.neutral50 }}
       >
         <div className="p-3">
-          <div style={{ fontSize: format.displaySM, fontWeight: 400 }}>
-            SyncSpace
+          <div className="flex justify-between">
+            <div style={{ fontSize: format.displaySM, fontWeight: 400 }}>
+              SyncSpace
+            </div>
+            <div style={{ color: theme.brand500, fontSize: format.textXS }}>
+              Reset
+            </div>
           </div>
+
           <div className="text-sm " style={{ color: theme.neutral700 }}>
             Upload documents and generate output
           </div>
@@ -301,20 +289,12 @@ const SyncSpace = () => {
             <UploadButton
               fileType={[".docx"]}
               onClick={async (file: File) => {
-                setTargetFile(file);
-                setCurrentStep(currentStep + 1);
-
                 try {
-                  const arrayBuffer = await file.arrayBuffer();
-                  const result = await mammoth.extractRawText({ arrayBuffer });
-                  const { value: html, messages } = await mammoth.convertToHtml(
-                    { arrayBuffer }
-                  );
-                  const text = result.value;
-
+                  const { text, html, arrayBuffer } = await readDocxFile(file);
                   setTargetFileText(text);
                   setTargetHtmlContent(html);
-                  // Now you can send the text to your backend
+                  setTargetFile(file);
+                  setCurrentStep(currentStep + 1);
                 } catch (error) {
                   console.error("Error reading .docx file:", error);
                 }
@@ -325,11 +305,10 @@ const SyncSpace = () => {
             <FileDisplayContainer theme={theme}>
               <div className="flex justify-start gap-2 flex-wrap">
                 <div>{targetFile.name}</div>
-                <div> | </div>
-                <div>{(targetFile.size / 1024).toFixed(2)} KB</div>
+                <div style={{ color: theme.neutral700 }}>
+                  · {(targetFile.size / 1024).toFixed(2)} KB
+                </div>
               </div>
-
-              <div>x</div>
             </FileDisplayContainer>
           )}
 
@@ -361,11 +340,12 @@ const SyncSpace = () => {
             <FileDisplayContainer theme={theme}>
               <div className="flex justify-start gap-2 flex-wrap">
                 <div>{associatedData.name}</div>
-                <div> | </div>
-                <div>{(associatedData.size / 1024).toFixed(2)} KB</div>
-              </div>
 
-              <div>x</div>
+                <div style={{ color: theme.neutral700 }}>
+                  {" "}
+                  · {(associatedData.size / 1024).toFixed(2)} KB
+                </div>
+              </div>
             </FileDisplayContainer>
           )}
 
@@ -396,11 +376,12 @@ const SyncSpace = () => {
             <FileDisplayContainer theme={theme}>
               <div className="flex justify-start gap-2 flex-wrap">
                 <div>{newData.name}</div>
-                <div> | </div>
-                <div>{(newData.size / 1024).toFixed(2)} KB</div>
-              </div>
 
-              <div>x</div>
+                <div style={{ color: theme.neutral700 }}>
+                  {" "}
+                  · {(newData.size / 1024).toFixed(2)} KB
+                </div>
+              </div>
             </FileDisplayContainer>
           )}
 
@@ -441,12 +422,14 @@ const SyncSpace = () => {
           )}
           {currentStep == SyncSpaceStep.ReviewExport &&
             generationProcess == generationProcessStage.Finish && (
-              <FileDisplayContainer
-                theme={theme}
-                className="flex gap-3 justify-center"
-              >
-                <CompleteSVG />
-                Complete
+              <FileDisplayContainer theme={theme}>
+                <div
+                  className="flex gap-2 justify-center items-center"
+                  style={{ fontWeight: 700 }}
+                >
+                  <CompleteSVG />
+                  Complete
+                </div>
               </FileDisplayContainer>
             )}
           <StepHeader
@@ -457,23 +440,41 @@ const SyncSpace = () => {
             information="Upload your documents here"
           />
           {currentStep == SyncSpaceStep.ReviewExport && (
-            <div
-              className=" items-center flex flex-col justify-center p-5"
-              style={{
-                backgroundColor: theme.neutral,
-                border: "2px solid " + theme.brand500,
-                borderBottomLeftRadius: format.roundmd,
-                borderBottomRightRadius: format.roundmd,
-              }}
-            >
+            <>
               <div
-                onClick={() => {
-                  setCurrentStep(currentStep + 1);
+                className="p-2"
+                style={{
+                  backgroundColor: theme.neutral,
+                  border: "2px solid " + theme.brand500,
+                  borderBottomLeftRadius: format.roundmd,
+                  borderBottomRightRadius: format.roundmd,
                 }}
               >
-                Export as DOCX
+                <div className="flex justify-start gap-2 mb-3">
+                  <div style={{ fontWeight: 700 }}>numaira output</div>
+                  <div style={{ color: theme.neutral700 }}>
+                    {" "}
+                    · {(targetFile!.size / 1024).toFixed(2)}KB
+                  </div>
+                </div>
+                <div className=" items-center flex flex-col justify-center m-3 ">
+                  <div
+                    onClick={() => {
+                      donwloadUpdatedDocx();
+                    }}
+                    className="px-3 py-2 cursor-pointer"
+                    style={{
+                      color: theme.brand500,
+                      backgroundColor: theme.brand,
+                      border: "2px solid " + theme.brand500,
+                      borderRadius: format.roundmd,
+                    }}
+                  >
+                    Export as DOCX
+                  </div>
+                </div>
               </div>
-            </div>
+            </>
           )}
         </div>
       </div>
@@ -561,6 +562,15 @@ const SyncSpace = () => {
                       <div className="flex flex-col justify-center w-full h-full items-center p-3">
                         <LogoSVG width={90} height={90} fill={theme.brand500} />
                         <ProgressBar duration={5000} />
+                        <div
+                          className="flex justify-center items-center"
+                          style={{
+                            color: theme.neutral700,
+                            fontSize: format.textXS,
+                          }}
+                        >
+                          Preparing Your Document...
+                        </div>
                       </div>
                     </LoadingNumariaVisualDiv>
                   )}
