@@ -2,7 +2,7 @@ import numpy as np
 from scipy.spatial.distance import cosine
 from dashscope import Generation
 
-def find_relevant_clips(clips, query_embedding, embed_text, threshold=0.7):
+def find_relevant_clips(clips, query_embedding, embed_text, threshold=0.6):
     relevant_clips = []
     for clip in clips:
         clip_embedding = embed_text(clip)
@@ -16,15 +16,13 @@ def identify_exact_words(relevant_clips, revenue_number, api_key):
     revenue_number = round_last_significant_digit(revenue_number)
     prompt = (
         f"给定以下文字片段 ：\n{clips_text}\n"
-        f"请找出并返回所有与 {revenue_number} 相等的数字。注意只能近似最后一位有效数字。例如2745000000只能近似到2.75 billion，不能近似到2.70 billion"
-        f"以下是一些判断相等的例子：'24927000000'和'24.93 billion'就可以理解为相等、'5216000000'与'5.22 billion'可以理解为相等、'2703000000'和'2.70 billion'就可以理解成相等。"
-        f"以下是一些判断不相等的例子：'2745000000'与'2.70 billion'就不相等、'5,153,000,000'和'5.22 billion'就不相等、'280000000'与'$2.70 billion就不相等；需要返回not found"
+        f"请找出并返回所有与 {revenue_number} 相等的数字"
         f"正确答案请使用列表格式返回，例如：['24.93 billion']。"
-        f"如果没有找到相等的数字，请返回'not found'。"
+        f"如果没有找到相等的数字，请返回['']。"
     )
 
     messages = [
-        {'role': 'system', 'content': '答案应该用列表形式返回，只包含符合条件的数字，不需要其他信息。如果没有符合的数字，返回“not found”。'},
+        {'role': 'system', 'content': '答案应该用列表形式返回，只包含符合条件的数字，不需要其他信息。如果没有符合的数字，返回['']'},
         {'role': 'user', 'content': prompt}
     ]
 
@@ -51,6 +49,8 @@ def identify_exact_words(relevant_clips, revenue_number, api_key):
 
 
 def round_last_significant_digit(number_str):
+    if(len(number_str) == 4):
+        return number_str
 
     # Convert string to integer
     number = int(number_str)
