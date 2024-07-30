@@ -15,11 +15,13 @@ print("I am called")
 
 # return a list of lists with the old value and the new value
 def numberMappingFromExcelToWord(word_value, old_excel_value, new_excel_value):
+    if old_excel_value ==0 or old_excel_value == '0':
+        return
 
     if not word_value or not old_excel_value or not new_excel_value:
         # Handle the case where any of the inputs are None or empty
         return []
-    if old_excel_value[0] == "-":
+    if old_excel_value[0] == "-" or new_excel_value[0] == "-":
         return 
     clips_file = "clips.txt"
 
@@ -40,12 +42,15 @@ def numberMappingFromExcelToWord(word_value, old_excel_value, new_excel_value):
 
     if exact_words == 'not found':
         # Handle the case where exact_words is None or empty
+        print("mapped word not found")
         return []
     exact_words_list = parse_nested_list(exact_words)
     if not exact_words_list:
         return
     task = []
     for i in exact_words_list:
+        if(len(exact_words_list) != 1): #temportary
+            return
         temp = []
         i = i.strip()
         temp.append(i[1:-1])
@@ -54,6 +59,6 @@ def numberMappingFromExcelToWord(word_value, old_excel_value, new_excel_value):
             new_value = new_value.strip().replace("'", "")
             temp.append(new_value)
             task.append(temp) 
-    print("what's return")
+    print("log:")
     print(task)
     return task

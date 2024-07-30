@@ -15,8 +15,8 @@ def identify_exact_words(relevant_clips, revenue_number, api_key):
     clips_text = "\n".join([clip for clip, _ in relevant_clips])
     prompt = (
         f"给定以下文字片段：\n{clips_text}\n\n"
-        f"请找出其中与 {revenue_number} 相等的数字（允许四舍五入的近似），例如5.216和5.22就可以理解为相等；24,927,000,000和24.93 billion就可以理解成相等；2,703,000,000和2.70 billion就可以理解成相等。如果没有与{revenue_number} 相等的文字片段，请返回'not found'。"
-        f"只需回答相关的数字，并用列表和引号分开，如 ['123456', '123百万']或者['456']。不要包含多余的推理信息。" 
+        f"请找出其中与 {revenue_number} 近似相等或相等的数字（允许四舍五入的近似），例如5.216和5.22就可以理解为相等；24,927,000,000和24.93 billion就可以理解为相等2,703,000,000和2.70 billion就可以理解成相等。如果没有与{revenue_number} 相等的文字片段，请返回'not found'。"
+        f"只需回答相关的数字，并用列表和引号分开，如 ['123456', '123百万']或者['456']。不要回复包含多余的信息。" 
     )
 
     messages = [
