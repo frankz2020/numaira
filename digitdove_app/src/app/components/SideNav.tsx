@@ -9,6 +9,13 @@ import CreateSVG from "../assets/create.svg";
 import TemplateSVG from "../assets/template.svg";
 import CommunitySVG from "../assets/community.svg";
 import SyncSVG from "../assets/syncSpace.svg";
+import SyncSelectedSVG from "../assets/syncSpaceSelected.svg";
+import HomeSelectedSVG from "../assets/homeSelected.svg";
+import BrowseSelectedSVG from "../assets/browseSelected.svg";
+import CreateSelectedSVG from "../assets/create.svg";
+import TemplateSelectedSVG from "../assets/templateSelected.svg";
+import CommunitySelectedSVG from "../assets/communitySelected.svg";
+
 import SettingSVG from "../assets/setting.svg";
 import BellSVG from "../assets/bell.svg";
 import HelpSVG from "../assets/helpMessage.svg";
@@ -71,6 +78,8 @@ const SideNav = () => {
             router.push("/home");
           }}
           SvgIcon={HomeSVG}
+          SvgIconSelected={HomeSelectedSVG}
+          useStroke={true}
         />
         <NavButton
           name="Create"
@@ -81,6 +90,8 @@ const SideNav = () => {
             router.push("/create");
           }}
           SvgIcon={CreateSVG}
+          SvgIconSelected={CreateSelectedSVG}
+          useStroke={true}
         />
         <NavButton
           name="SyncSpace"
@@ -91,6 +102,7 @@ const SideNav = () => {
             router.push("/syncSpace");
           }}
           SvgIcon={SyncSVG}
+          SvgIconSelected={SyncSelectedSVG}
         />
         <NavButton
           name="Browse"
@@ -101,6 +113,8 @@ const SideNav = () => {
             router.push("/browse");
           }}
           SvgIcon={BrowseSVG}
+          SvgIconSelected={BrowseSelectedSVG}
+          useStroke={true}
         />
         <NavButton
           name="Template"
@@ -111,6 +125,8 @@ const SideNav = () => {
             router.push("/template");
           }}
           SvgIcon={TemplateSVG}
+          SvgIconSelected={TemplateSelectedSVG}
+          useStroke={true}
         />
         <NavButton
           name="Community"
@@ -121,6 +137,8 @@ const SideNav = () => {
             router.push("/community");
           }}
           SvgIcon={CommunitySVG}
+          SvgIconSelected={CommunitySelectedSVG}
+          useStroke={true}
         />
       </div>
   );

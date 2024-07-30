@@ -15,6 +15,8 @@ interface NavButtonProps {
   selected: boolean;
   onClick: () => void;
   SvgIcon?: React.ComponentType<React.SVGProps<SVGSVGElement>>; // Proper type for SVG component
+  SvgIconSelected?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  useStroke?: boolean;
 }
 
 const HighlightBar = styled.div.attrs(({ selected, theme }) => ({
@@ -33,16 +35,16 @@ const HighlightBar = styled.div.attrs(({ selected, theme }) => ({
   top: 0;
   bottom: 0;
   width: 3px;
- 
-  
 `;
 const NavButtonContainer = styled.div`
+  min-width: 60px;
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   cursor: pointer;
   width: 100%;
+  padding: 5px;
 `;
 
 const NavButton: React.FC<NavButtonProps> = ({
@@ -51,6 +53,8 @@ const NavButton: React.FC<NavButtonProps> = ({
   selected,
   onClick,
   SvgIcon,
+  SvgIconSelected,
+  useStroke
 }) => {
   const { theme } = useTheme();
 
@@ -63,15 +67,14 @@ const NavButton: React.FC<NavButtonProps> = ({
           theme={theme}
         />
       )}
-      {SvgIcon && (
-        <SvgIcon
-          width={30}
-          height={30}
-          stroke={selected ? theme.neutral100 : theme.neutral1000}
-          fill= {selected ? theme.primary : "none"}
-          strokeWidth={2}
-          className="transition-all"
-        />
+      {SvgIcon && SvgIconSelected && (
+        <div>
+          {selected ? (
+            <SvgIconSelected />
+          ) : (
+            <SvgIcon stroke={useStroke ? theme.neutral1000 : ''} strokeWidth={2} />
+          )}
+        </div>
       )}
       {name && (
         <div
