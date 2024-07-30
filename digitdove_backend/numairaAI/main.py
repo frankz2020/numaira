@@ -39,11 +39,8 @@ def numberMappingFromExcelToWord(word_value, old_excel_value, new_excel_value):
         return
 
     exact_words = identify_exact_words(relevant_clips, old_excel_value, api_key) #if does not exist, it returns ['']
-
-    if exact_words == 'not found':
-        # Handle the case where exact_words is None or empty
-        print("mapped word not found")
-        return []
+    if exact_words == "['']":
+        return
     exact_words_list = parse_nested_list(exact_words)
     if not exact_words_list:
         return
