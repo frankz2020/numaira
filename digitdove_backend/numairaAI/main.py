@@ -42,8 +42,7 @@ def numberMappingFromExcelToWord(word_value, old_excel_value, new_excel_value):
 
     if exact_words == 'not found':
         # Handle the case where exact_words is None or empty
-        print("mapped word not found")
-        return []
+        return
     exact_words_list = parse_nested_list(exact_words)
     if not exact_words_list:
         return
