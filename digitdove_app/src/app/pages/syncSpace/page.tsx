@@ -169,6 +169,7 @@ const SyncSpace = () => {
   const [newData, setNewData] = useState<File | null>(null);
   const [newDataValue, setNewDataValue] = useState<any[] | null>(null);
 
+  const [error, setError] = useState(false);
   const [outputFile, setOutputFile] = useState(null);
   enum generationProcessStage {
     Prepare,
@@ -479,222 +480,241 @@ const SyncSpace = () => {
         </div>
       </div>
 
-      <div
-        className="flex justify-center items-center gap-5 p-10"
-        style={{ width: "70%" }}
-      >
-        <div
-          className="flex flex-col justify-center p-4 w-100 h-100"
-          style={{ width: "100%", height: "100%" }}
-        >
-          {/* Row 1 */}
-          <div className="flex justify-center gap-10 h-100 w-100">
-            {/* Row 1.1 */}
-            <div className=" flex justify-center items-end  w-40">
-              {targetFile != null && (
-                <FileVisualDiv dotted={true} theme={theme} opacity={1}>
-                  <div className="p-2 rounded">
-                    <div>{getPlaceHolder(targetFile.name)}</div>
-                    <div
-                      style={{
-                        backgroundColor: theme.neutral100,
-                        wordWrap: "break-word",
-                        whiteSpace: "pre-wrap",
-                        overflowWrap: "break-word",
-                      }}
-                      className="p-2"
-                    >
+      <div className="flex flex-col" style={{ width: "70%" }}>
+        {error && (
+          <div
+            className="flex w-full p-3"
+            style={{
+              border: "2px solid " + theme.destructive,
+              color: theme.destructive,
+            }}
+          >
+            <div style={{ fontWeight: 700 }}> Network Error: </div>
+            <div>The operation could not be completed.</div>
+            <div className="underline ms-5 cursor-pointer">Retry</div>
+          </div>
+        )}
+
+        <div className="justify-center items-center gap-5 p-10 h-full">
+          <div
+            className="flex flex-col justify-center p-4 w-100 h-100"
+            style={{ width: "100%", height: "100%" }}
+          >
+            {/* Row 1 */}
+            <div className="flex justify-center gap-10 h-100 w-100">
+              {/* Row 1.1 */}
+              <div className=" flex justify-center items-end  w-40">
+                {targetFile != null && (
+                  <FileVisualDiv dotted={true} theme={theme} opacity={1}>
+                    <div className="p-2 rounded">
+                      <div>{getPlaceHolder(targetFile.name)}</div>
                       <div
-                        className="items-center text-sm h-100"
-                        style={{ minHeight: "40px" }}
+                        style={{
+                          backgroundColor: theme.neutral100,
+                          wordWrap: "break-word",
+                          whiteSpace: "pre-wrap",
+                          overflowWrap: "break-word",
+                        }}
+                        className="p-2"
                       >
-                        {targetFile.name}
+                        <div
+                          className="items-center text-sm h-100"
+                          style={{ minHeight: "40px" }}
+                        >
+                          {targetFile.name}
+                        </div>
                       </div>
                     </div>
+                  </FileVisualDiv>
+                )}
+              </div>
+
+              {/* Row 1.2 */}
+              <div className=" flex justify-center items-center w-20">
+                {targetFile && associatedData && (
+                  <Arrow theme={theme} direction="right" />
+                )}
+              </div>
+
+              {/* Row 1.3 */}
+              <div className="flex justify-center items-end w-40">
+                {targetFile && associatedData && (
+                  <>
+                    {generationProcess === generationProcessStage.Prepare && (
+                      <FileVisualDiv
+                        theme={theme}
+                        dotted={false}
+                        opacity={0.5}
+                        style={{
+                          borderColor: newData
+                            ? theme.brand500
+                            : theme.brand1000,
+                        }}
+                      >
+                        <div className="p-2">
+                          <div>{getPlaceHolder("new " + targetFile.name)}</div>
+                          <div
+                            style={{
+                              backgroundColor: theme.neutral100,
+                              wordWrap: "break-word",
+                              whiteSpace: "pre-wrap",
+                              overflowWrap: "break-word",
+                            }}
+                            className="p-2"
+                          >
+                            <div
+                              className="items-center text-sm h-100"
+                              style={{ minHeight: "40px" }}
+                            >
+                              {"numaira output "}
+                            </div>
+                          </div>
+                        </div>
+                      </FileVisualDiv>
+                    )}
+                    {generationProcess === generationProcessStage.Start && (
+                      <LoadingNumariaVisualDiv theme={theme}>
+                        <div className="flex flex-col justify-center w-full h-full items-center p-3">
+                          <LogoSVG
+                            width={90}
+                            height={90}
+                            fill={theme.brand500}
+                          />
+                          <ProgressBar duration={5000} />
+                          <div
+                            className="flex justify-center items-center"
+                            style={{
+                              color: theme.neutral700,
+                              fontSize: format.textXS,
+                            }}
+                          >
+                            Preparing Your Document...
+                          </div>
+                        </div>
+                      </LoadingNumariaVisualDiv>
+                    )}
+                    {generationProcess === generationProcessStage.Finish && (
+                      <FileVisualDiv
+                        theme={theme}
+                        dotted={false}
+                        opacity={1}
+                        style={{
+                          borderColor: theme.brand500,
+                        }}
+                      >
+                        <div className="p-2">
+                          <div>{getPlaceHolder("new " + targetFile.name)}</div>
+                          <div
+                            style={{
+                              backgroundColor: theme.neutral100,
+                              wordWrap: "break-word",
+                              whiteSpace: "pre-wrap",
+                              overflowWrap: "break-word",
+                            }}
+                            className="p-2"
+                          >
+                            <div
+                              className="items-center text-sm h-100"
+                              style={{ minHeight: "40px" }}
+                            >
+                              {"numaira output "}
+                            </div>
+                          </div>
+                        </div>
+                      </FileVisualDiv>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Row 2 */}
+            <div className="flex  justify-center gap-10 h-20 p-4">
+              {/* Row 2.1 */}
+              <div className=" flex justify-center items-center w-40">
+                {targetFile && <Arrow theme={theme} direction="up" />}
+              </div>
+              {/* Row 2.2 */}
+              <div className=" flex justify-center items-center w-20">
+                {targetFile == null && <VisualPlaceholder text="Target File" />}
+              </div>
+
+              {/* Row 2.3 */}
+              <div className=" flex justify-center items-center w-40">
+                {targetFile && associatedData && (
+                  <Arrow theme={theme} direction="up" />
+                )}
+              </div>
+            </div>
+
+            {/* Row 3 */}
+            <div className="flex  justify-center gap-10 h-100">
+              {/* Row 3.1 */}
+              <div className=" flex justify-center items-start  w-40">
+                {targetFile && (
+                  <div className="flex flex-col justify-center items-center">
+                    {!associatedData ? (
+                      <VisualPlaceholder text="Associated Data" />
+                    ) : (
+                      <FileVisualDiv theme={theme} dotted={true} opacity={1}>
+                        <div className="p-2">
+                          <div>{getPlaceHolder(associatedData.name)}</div>
+                          <div
+                            style={{
+                              backgroundColor: theme.neutral100,
+                              wordWrap: "break-word",
+                              whiteSpace: "pre-wrap",
+                              overflowWrap: "break-word",
+                            }}
+                            className="p-2"
+                          >
+                            <div
+                              className="items-center text-sm h-100"
+                              style={{ minHeight: "40px" }}
+                            >
+                              {associatedData.name}
+                            </div>
+                          </div>
+                        </div>
+                      </FileVisualDiv>
+                    )}
                   </div>
-                </FileVisualDiv>
-              )}
-            </div>
-
-            {/* Row 1.2 */}
-            <div className=" flex justify-center items-center w-20">
-              {targetFile && associatedData && (
-                <Arrow theme={theme} direction="right" />
-              )}
-            </div>
-
-            {/* Row 1.3 */}
-            <div className="flex justify-center items-end w-40">
-              {targetFile && associatedData && (
-                <>
-                  {generationProcess === generationProcessStage.Prepare && (
-                    <FileVisualDiv
-                      theme={theme}
-                      dotted={false}
-                      opacity={0.5}
-                      style={{
-                        borderColor: newData ? theme.brand500 : theme.brand1000,
-                      }}
-                    >
-                      <div className="p-2">
-                        <div>{getPlaceHolder("new " + targetFile.name)}</div>
-                        <div
-                          style={{
-                            backgroundColor: theme.neutral100,
-                            wordWrap: "break-word",
-                            whiteSpace: "pre-wrap",
-                            overflowWrap: "break-word",
-                          }}
-                          className="p-2"
-                        >
+                )}
+              </div>
+              {/* Row 3.2*/}
+              <div className=" flex justify-center items-start w-20"></div>
+              {/* Row 3.3 */}
+              <div className="flex justify-center items-start w-40">
+                {targetFile && associatedData && (
+                  <div className="flex flex-col justify-center items-center">
+                    {!newData ? (
+                      <VisualPlaceholder text="New Data" />
+                    ) : (
+                      <FileVisualDiv theme={theme} dotted={true} opacity={1}>
+                        <div className="p-2">
+                          <div>{getPlaceHolder(newData.name)}</div>
                           <div
-                            className="items-center text-sm h-100"
-                            style={{ minHeight: "40px" }}
+                            style={{
+                              backgroundColor: theme.neutral100,
+                              wordWrap: "break-word",
+                              whiteSpace: "pre-wrap",
+                              overflowWrap: "break-word",
+                            }}
+                            className="p-2"
                           >
-                            {"numaira output "}
+                            <div
+                              className="items-center text-sm h-100"
+                              style={{ minHeight: "40px" }}
+                            >
+                              {newData.name}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </FileVisualDiv>
-                  )}
-                  {generationProcess === generationProcessStage.Start && (
-                    <LoadingNumariaVisualDiv theme={theme}>
-                      <div className="flex flex-col justify-center w-full h-full items-center p-3">
-                        <LogoSVG width={90} height={90} fill={theme.brand500} />
-                        <ProgressBar duration={5000} />
-                        <div
-                          className="flex justify-center items-center"
-                          style={{
-                            color: theme.neutral700,
-                            fontSize: format.textXS,
-                          }}
-                        >
-                          Preparing Your Document...
-                        </div>
-                      </div>
-                    </LoadingNumariaVisualDiv>
-                  )}
-                  {generationProcess === generationProcessStage.Finish && (
-                    <FileVisualDiv
-                      theme={theme}
-                      dotted={false}
-                      opacity={1}
-                      style={{
-                        borderColor: theme.brand500,
-                      }}
-                    >
-                      <div className="p-2">
-                        <div>{getPlaceHolder("new " + targetFile.name)}</div>
-                        <div
-                          style={{
-                            backgroundColor: theme.neutral100,
-                            wordWrap: "break-word",
-                            whiteSpace: "pre-wrap",
-                            overflowWrap: "break-word",
-                          }}
-                          className="p-2"
-                        >
-                          <div
-                            className="items-center text-sm h-100"
-                            style={{ minHeight: "40px" }}
-                          >
-                            {"numaira output "}
-                          </div>
-                        </div>
-                      </div>
-                    </FileVisualDiv>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Row 2 */}
-          <div className="flex  justify-center gap-10 h-20 p-4">
-            {/* Row 2.1 */}
-            <div className=" flex justify-center items-center w-40">
-              {targetFile && <Arrow theme={theme} direction="up" />}
-            </div>
-            {/* Row 2.2 */}
-            <div className=" flex justify-center items-center w-20">
-              {targetFile == null && <VisualPlaceholder text="Target File" />}
-            </div>
-
-            {/* Row 2.3 */}
-            <div className=" flex justify-center items-center w-40">
-              {targetFile && associatedData && (
-                <Arrow theme={theme} direction="up" />
-              )}
-            </div>
-          </div>
-
-          {/* Row 3 */}
-          <div className="flex  justify-center gap-10 h-100">
-            {/* Row 3.1 */}
-            <div className=" flex justify-center items-start  w-40">
-              {targetFile && (
-                <div className="flex flex-col justify-center items-center">
-                  {!associatedData ? (
-                    <VisualPlaceholder text="Associated Data" />
-                  ) : (
-                    <FileVisualDiv theme={theme} dotted={true} opacity={1}>
-                      <div className="p-2">
-                        <div>{getPlaceHolder(associatedData.name)}</div>
-                        <div
-                          style={{
-                            backgroundColor: theme.neutral100,
-                            wordWrap: "break-word",
-                            whiteSpace: "pre-wrap",
-                            overflowWrap: "break-word",
-                          }}
-                          className="p-2"
-                        >
-                          <div
-                            className="items-center text-sm h-100"
-                            style={{ minHeight: "40px" }}
-                          >
-                            {associatedData.name}
-                          </div>
-                        </div>
-                      </div>
-                    </FileVisualDiv>
-                  )}
-                </div>
-              )}
-            </div>
-            {/* Row 3.2*/}
-            <div className=" flex justify-center items-start w-20"></div>
-            {/* Row 3.3 */}
-            <div className="flex justify-center items-start w-40">
-              {targetFile && associatedData && (
-                <div className="flex flex-col justify-center items-center">
-                  {!newData ? (
-                    <VisualPlaceholder text="New Data" />
-                  ) : (
-                    <FileVisualDiv theme={theme} dotted={true} opacity={1}>
-                      <div className="p-2">
-                        <div>{getPlaceHolder(newData.name)}</div>
-                        <div
-                          style={{
-                            backgroundColor: theme.neutral100,
-                            wordWrap: "break-word",
-                            whiteSpace: "pre-wrap",
-                            overflowWrap: "break-word",
-                          }}
-                          className="p-2"
-                        >
-                          <div
-                            className="items-center text-sm h-100"
-                            style={{ minHeight: "40px" }}
-                          >
-                            {newData.name}
-                          </div>
-                        </div>
-                      </div>
-                    </FileVisualDiv>
-                  )}
-                </div>
-              )}
+                      </FileVisualDiv>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

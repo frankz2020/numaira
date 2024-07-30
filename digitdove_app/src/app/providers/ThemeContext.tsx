@@ -25,6 +25,8 @@ interface Theme {
   brand500: string;
   brand800: string;
   brand1000: string;
+
+  destructive: string;
   // highlightTextColor: string;
   [key: string]: string; // To support additional colors
 }
@@ -37,6 +39,8 @@ interface ColorType {
   neutral200: string;
   neutral700: string;
   neutral1000: string;
+  destructive: string;
+  destructive_dark: string;
   primary_dark: string;
   neutral_dark: string;
   neutral50_dark: string;
@@ -71,7 +75,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
           neutral1000: colors.neutral1000,
           neutral200: colors.neutral200,
           neutral300: colors.neutral300, // Add the missing property
-
+          destructive: colors.destructive,
           brand: colors.brand,
           brand200: colors.brand200,
           brand500: colors.brand500,
@@ -90,6 +94,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
           neutral1000: colors.neutral1000,
           neutral200: colors.neutral200,
           neutral300: colors.neutral300, // Add the missing property
+          destructive: colors.destructive,
           brand: colors.brand,
           brand200: colors.brand200,
           brand500: colors.brand500,
