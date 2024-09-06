@@ -54,7 +54,7 @@ const NavButton: React.FC<NavButtonProps> = ({
   onClick,
   SvgIcon,
   SvgIconSelected,
-  useStroke
+  useStroke,
 }) => {
   const { theme } = useTheme();
 
@@ -67,14 +67,29 @@ const NavButton: React.FC<NavButtonProps> = ({
           theme={theme}
         />
       )}
-      {SvgIcon && SvgIconSelected && (
+      {SvgIcon && SvgIconSelected && SvgIcon != SvgIconSelected && (
         <div>
           {selected ? (
-            <SvgIconSelected />
+            <SvgIconSelected width={30} height={30} />
           ) : (
-            <SvgIcon stroke={useStroke ? theme.neutral1000 : ''} strokeWidth={2} />
+            <SvgIcon
+              width={30}
+              height={30}
+              stroke={useStroke ? theme.neutral1000 : ""}
+              strokeWidth={useStroke ? 2 : 0}
+              fill={!useStroke ? theme.neutral1000 : "none"}
+            />
           )}
         </div>
+      )}
+      {SvgIcon && SvgIconSelected && SvgIcon == SvgIconSelected && (
+        <SvgIcon
+          width={30}
+          height={30}
+          stroke={useStroke ? theme.neutral1000 : ""}
+          strokeWidth={useStroke ? 2 : 0}
+          fill={!useStroke ? theme.neutral1000 : "none"}
+        />
       )}
       {name && (
         <div

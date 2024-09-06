@@ -14,6 +14,10 @@ interface GlobalContextProps {
   user: string | null;
   setUser: (user: string | null) => void;
   backendUrl: string;
+  syncSpaceTargetFile: any;
+  setSyncSpaceTargetFile: (syncSpaceTargetFile: any) => void;
+  syncSpaceTargetHTML: any;
+  setSyncSpaceTargetHTML: (syncSpaceTargetHTML: any) => void;
 }
 
 const GlobalContext = createContext<GlobalContextProps | undefined>(undefined);
@@ -21,6 +25,8 @@ const GlobalContext = createContext<GlobalContextProps | undefined>(undefined);
 export const GlobalProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<string | null>(null);
   const [loggedIn, setLoggedIn] = useState<Boolean>(false);
+  const [syncSpaceTargetFile, setSyncSpaceTargetFile] = useState<any>(null);
+  const [syncSpaceTargetHTML, setSyncSpaceTargetHTML] = useState<any>(null);
   const backendUrl = "http://127.0.0.1:8000/";
 
   const fetchCurrentUser = async () => {
@@ -50,7 +56,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <GlobalContext.Provider
-      value={{ user, setUser, loggedIn, setLoggedIn, backendUrl }}
+      value={{ user, setUser, loggedIn, setLoggedIn, backendUrl, syncSpaceTargetFile, setSyncSpaceTargetFile, syncSpaceTargetHTML, setSyncSpaceTargetHTML }}
     >
       {children}
     </GlobalContext.Provider>

@@ -15,7 +15,7 @@ import { useFormat } from "../providers/FormatContext";
 import { ButtonOptions } from "./SideNav";
 import styled from "styled-components";
 import { useGlobalContext } from "../providers/GlobalContext";
-
+import LogoSVG from "../assets/logo.svg";
 const AvatarContainer = styled.div`
   display: flex;
   align-items: center;
@@ -62,19 +62,15 @@ const TopNav = () => {
     >
       <div className="flex justify-between items-center w-full h-100 p-2">
         <div
-          style={{
-            color: theme.primary,
-            fontSize: format.textXL,
-            fontWeight: "bold",
-          }}
           onClick={() => {
             console.log("click");
             router.push("/");
           }}
-          className="cursor-pointer p-2"
+          className="cursor-pointer p-2 w-14 h-14"
         >
-          Numaira
+          <LogoSVG fill={theme.brand500}/>
         </div>
+        
         <SearchBar />
         <div className="flex justify-between gap-4 items-center">
           <NavButton
@@ -82,18 +78,24 @@ const TopNav = () => {
             selected={selectedBtn == ButtonOptions.Bell}
             onClick={() => setSelectedBtn(ButtonOptions.Bell)}
             SvgIcon={BellSVG}
+            SvgIconSelected={BellSVG}
+            useStroke={true}
           />
           <NavButton
             highlightDirection={HighlightDirection.Left}
             selected={selectedBtn == ButtonOptions.Help}
             onClick={() => setSelectedBtn(ButtonOptions.Help)}
             SvgIcon={HelpSVG}
+            SvgIconSelected={HelpSVG}
+            useStroke={true}
           />
           <NavButton
             highlightDirection={HighlightDirection.Left}
             selected={selectedBtn == ButtonOptions.Setting}
             onClick={() => setSelectedBtn(ButtonOptions.Setting)}
             SvgIcon={SettingSVG}
+            SvgIconSelected={SettingSVG}
+            useStroke={true}
           />
           <AvatarContainer>
             <Avatar

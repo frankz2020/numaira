@@ -28,8 +28,9 @@
     "brand800_dark": "#7FB2FF",
     "brand1000_dark": "#E2EEFF",
 
-    "destructive": "#FF4E4E",
-    "destructive_dark": "#FF3D3D"
+    "warning": "#FF4E4E",
+    "warning_background": "#FFF4F4",
+    "warning_dark": "#FF3D3D"
 
   }
   

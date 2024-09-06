@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, { keyframes, css } from "styled-components";
 export const HorizontalArrow = styled.div<{ direction: string }>`
   --c: ${(props) => props.theme.neutral700}; /* color */
   --r: 5px; /* circle size */
@@ -57,11 +57,15 @@ export const VerticalArrow = styled.div<{ direction: string }>`
   }
 `;
 
+
+
+
 export const FileVisualDiv = styled.div<{
   dotted: boolean;
   theme: any;
   opacity: number;
   borderColor?: string | null;
+  isProcessing?: boolean;
 }>`
   max-width: 280px;
   min-width: 200px;
@@ -76,14 +80,54 @@ export const FileVisualDiv = styled.div<{
       ? "2px dotted " + props.theme.neutral1000
       : "2px solid " + props.theme.neutral100};
   background-color: ${(props) => props.theme.neutral100} !important;
+  position: relative;
+
+  ${(props) =>
+    props.isProcessing &&
+    css`
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.6);
+        z-index: 1;
+      }
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 40px;
+        height: 40px;
+        margin: -20px 0 0 -20px;
+        border: 4px solid ${props.theme.brand500};
+        border-top: 4px solid ${props.theme.neutral100};
+        border-radius: 50%;
+        animation: ${spin} 1s linear infinite;
+        z-index: 2;
+      }
+    `}
 `;
 
 
 export const FileDisplayContainer = styled.div`
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding: 8px;
-margin-bottom: 4px;
-background-color: ${(props) => props.theme.neutral};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  margin-bottom: 4px;
+  background-color: ${(props) => props.theme.neutral};
+`;
+
+const spin = keyframes`
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 `;
