@@ -32,7 +32,7 @@ import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
 import { readDocxFile } from "./utils";
 enum SyncSpaceStep {
-   syncSpaceTargetFile,
+  syncSpaceTargetFile,
   AssociatedData,
   NewData,
   Generate,
@@ -155,10 +155,16 @@ const readExcelFile = (file: File, numberOnly: boolean): Promise<any[]> => {
 const SyncSpace = () => {
   const { format } = useFormat();
   const { theme } = useTheme();
-  const {syncSpaceTargetFile, setSyncSpaceTargetFile, setSyncSpaceTargetHTML} = useGlobalContext();
+  const {
+    syncSpaceTargetFile,
+    setSyncSpaceTargetFile,
+    syncSpaceOutputFile, 
+    setSyncSpaceOutputFile,
+  } = useGlobalContext();
   const { backendUrl } = useGlobalContext();
-  const [currentStep, setCurrentStep] = useState(SyncSpaceStep. syncSpaceTargetFile);
-
+  const [currentStep, setCurrentStep] = useState(
+    SyncSpaceStep.syncSpaceTargetFile
+  );
 
   const [targetFileText, setTargetFileText] = useState<string | null>(null);
 
@@ -223,7 +229,7 @@ const SyncSpace = () => {
 
   const replaceTextInDocx = async (replacements: string[][]) => {
     let output: any = null;
-    let file =  syncSpaceTargetFile;
+    let file = syncSpaceTargetFile;
     assert(file != null);
     if (!replacements || replacements.length === 0) {
       console.error("The replacements array is empty.");
@@ -267,7 +273,15 @@ const SyncSpace = () => {
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     });
     setOutputFile(output);
+    setSyncSpaceOutputFile(output);
   };
+
+  useEffect(() => {
+    if (currentStep === SyncSpaceStep.ReviewExport) {
+      console.log('go to review')
+      router.push("/syncSpace/review");
+    }
+  }, [currentStep]);
 
   const donwloadUpdatedDocx = () => {
     assert(outputFile != null);
@@ -310,16 +324,14 @@ const SyncSpace = () => {
             atStage={currentStep == SyncSpaceStep.syncSpaceTargetFile}
             information="Upload your documents here"
           />
-          {currentStep == SyncSpaceStep. syncSpaceTargetFile && (
+          {currentStep == SyncSpaceStep.syncSpaceTargetFile && (
             <UploadButton
               fileType={[".docx"]}
               onClick={async (file: File) => {
                 try {
                   const { text, html, arrayBuffer } = await readDocxFile(file);
                   setTargetFileText(text);
-                  
-                  setSyncSpaceTargetHTML(html);
-                   setSyncSpaceTargetFile(file);
+                  setSyncSpaceTargetFile(file);
                   setCurrentStep(currentStep + 1);
                 } catch (error) {
                   console.error("Error reading .docx file:", error);
@@ -327,12 +339,12 @@ const SyncSpace = () => {
               }}
             />
           )}
-          { syncSpaceTargetFile && (
+          {syncSpaceTargetFile && (
             <FileDisplayContainer theme={theme}>
               <div className="flex justify-start gap-2 flex-wrap">
-                <div>{ syncSpaceTargetFile.name}</div>
+                <div>{syncSpaceTargetFile.name}</div>
                 <div style={{ color: theme.neutral700 }}>
-                  · {( syncSpaceTargetFile.size / 1024).toFixed(2)} KB
+                  · {(syncSpaceTargetFile.size / 1024).toFixed(2)} KB
                 </div>
               </div>
             </FileDisplayContainer>
@@ -451,7 +463,6 @@ const SyncSpace = () => {
               </GenerateButton>
             </div>
           )}
-         
         </div>
       </div>
 
@@ -483,7 +494,7 @@ const SyncSpace = () => {
             <div className="flex justify-center gap-10 h-100 w-100">
               {/* Row 1.1 */}
               <div className=" flex justify-center items-end  w-40">
-                { syncSpaceTargetFile != null && (
+                {syncSpaceTargetFile != null && (
                   <FileVisualDiv
                     dotted={true}
                     theme={theme}
@@ -493,7 +504,7 @@ const SyncSpace = () => {
                     }
                   >
                     <div className="p-2 rounded">
-                      <div>{getPlaceHolder( syncSpaceTargetFile.name)}</div>
+                      <div>{getPlaceHolder(syncSpaceTargetFile.name)}</div>
                       <div
                         style={{
                           backgroundColor: theme.neutral100,
@@ -507,7 +518,7 @@ const SyncSpace = () => {
                           className="items-center text-sm h-100"
                           style={{ minHeight: "40px" }}
                         >
-                          { syncSpaceTargetFile.name}
+                          {syncSpaceTargetFile.name}
                         </div>
                       </div>
                     </div>
@@ -517,14 +528,14 @@ const SyncSpace = () => {
 
               {/* Row 1.2 */}
               <div className=" flex justify-center items-center w-20">
-                { syncSpaceTargetFile && associatedData && (
+                {syncSpaceTargetFile && associatedData && (
                   <Arrow theme={theme} direction="right" />
                 )}
               </div>
 
               {/* Row 1.3 */}
               <div className="flex justify-center items-end w-40">
-                { syncSpaceTargetFile && associatedData && (
+                {syncSpaceTargetFile && associatedData && (
                   <>
                     {generationProcess === generationProcessStage.Prepare && (
                       <FileVisualDiv
@@ -539,7 +550,9 @@ const SyncSpace = () => {
                         }}
                       >
                         <div className="p-2">
-                          <div>{getPlaceHolder("new " +  syncSpaceTargetFile.name)}</div>
+                          <div>
+                            {getPlaceHolder("new " + syncSpaceTargetFile.name)}
+                          </div>
                           <div
                             style={{
                               backgroundColor: theme.neutral100,
@@ -595,7 +608,9 @@ const SyncSpace = () => {
                         }}
                       >
                         <div className="p-2">
-                          <div>{getPlaceHolder("new " +  syncSpaceTargetFile.name)}</div>
+                          <div>
+                            {getPlaceHolder("new " + syncSpaceTargetFile.name)}
+                          </div>
                           <div
                             style={{
                               backgroundColor: theme.neutral100,
@@ -624,16 +639,18 @@ const SyncSpace = () => {
             <div className="flex  justify-center gap-10 h-20 p-4">
               {/* Row 2.1 */}
               <div className=" flex justify-center items-center w-40">
-                { syncSpaceTargetFile && <Arrow theme={theme} direction="up" />}
+                {syncSpaceTargetFile && <Arrow theme={theme} direction="up" />}
               </div>
               {/* Row 2.2 */}
               <div className=" flex justify-center items-center w-20">
-                { syncSpaceTargetFile == null && <VisualPlaceholder text="Target File" />}
+                {syncSpaceTargetFile == null && (
+                  <VisualPlaceholder text="Target File" />
+                )}
               </div>
 
               {/* Row 2.3 */}
               <div className=" flex justify-center items-center w-40">
-                { syncSpaceTargetFile && associatedData && (
+                {syncSpaceTargetFile && associatedData && (
                   <Arrow theme={theme} direction="up" />
                 )}
               </div>
@@ -643,7 +660,7 @@ const SyncSpace = () => {
             <div className="flex  justify-center gap-10 h-100">
               {/* Row 3.1 */}
               <div className=" flex justify-center items-start  w-40">
-                { syncSpaceTargetFile && (
+                {syncSpaceTargetFile && (
                   <div className="flex flex-col justify-center items-center">
                     {!associatedData ? (
                       <VisualPlaceholder text="Associated Data" />
@@ -684,7 +701,7 @@ const SyncSpace = () => {
               <div className=" flex justify-center items-start w-20"></div>
               {/* Row 3.3 */}
               <div className="flex justify-center items-start w-40">
-                { syncSpaceTargetFile && associatedData && (
+                {syncSpaceTargetFile && associatedData && (
                   <div className="flex flex-col justify-center items-center">
                     {!newData ? (
                       <VisualPlaceholder text="New Data" />

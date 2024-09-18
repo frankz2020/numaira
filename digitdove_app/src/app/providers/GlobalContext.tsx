@@ -16,8 +16,8 @@ interface GlobalContextProps {
   backendUrl: string;
   syncSpaceTargetFile: any;
   setSyncSpaceTargetFile: (syncSpaceTargetFile: any) => void;
-  syncSpaceTargetHTML: any;
-  setSyncSpaceTargetHTML: (syncSpaceTargetHTML: any) => void;
+  setSyncSpaceOutputFile: (syncSpaceOutputFile: any) => void;
+  syncSpaceOutputFile: any;
 }
 
 const GlobalContext = createContext<GlobalContextProps | undefined>(undefined);
@@ -27,13 +27,15 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
   const [loggedIn, setLoggedIn] = useState<Boolean>(false);
   const [syncSpaceTargetFile, setSyncSpaceTargetFile] = useState<any>(null);
   const [syncSpaceTargetHTML, setSyncSpaceTargetHTML] = useState<any>(null);
+  const [syncSpaceOutputFile, setSyncSpaceOutputFile] = useState<any>(null);
+  
   const backendUrl = "http://127.0.0.1:8000/";
 
   const fetchCurrentUser = async () => {
     try {
       const response = await fetch(`${backendUrl}/user/current_user`, {
-        method: 'GET',
-        credentials: 'include' 
+        method: "GET",
+        credentials: "include",
       });
       if (response.ok) {
         const data = await response.json();
@@ -56,7 +58,17 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <GlobalContext.Provider
-      value={{ user, setUser, loggedIn, setLoggedIn, backendUrl, syncSpaceTargetFile, setSyncSpaceTargetFile, syncSpaceTargetHTML, setSyncSpaceTargetHTML }}
+      value={{
+        user,
+        setUser,
+        loggedIn,
+        setLoggedIn,
+        backendUrl,
+        syncSpaceTargetFile,
+        setSyncSpaceTargetFile,
+        setSyncSpaceOutputFile,
+        syncSpaceOutputFile,
+      }}
     >
       {children}
     </GlobalContext.Provider>

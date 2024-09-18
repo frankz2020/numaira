@@ -30,7 +30,13 @@
 
     "warning": "#FF4E4E",
     "warning_background": "#FFF4F4",
-    "warning_dark": "#FF3D3D"
+    "warning_background_dark": "#260000",
+    "warning_dark": "#FF3D3D",
+    
+    "docx_color": "#185ABD",
+    "docx_color_dark": "#3B8AFF",
+    "xlsx_color": "#107C41",
+    "xlsx_color_dark": "#00A94D"
 
   }
   

@@ -27,6 +27,9 @@ interface Theme {
   brand1000: string;
 
   warning: string;
+
+  docx_color: string;
+  xlsx_color: string;
   // highlightTextColor: string;
   [key: string]: string; // To support additional colors
 }
@@ -83,6 +86,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
           brand500: colors.brand500,
           brand800: colors.brand800,
           brand1000: colors.brand1000,
+          docx_color: colors.docx_color,
+          xlsx_color: colors.xlsx_color,
           // Add other colors as needed
         });
       } else {
@@ -103,6 +108,8 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
           brand500: colors.brand500,
           brand800: colors.brand800,
           brand1000: colors.brand1000,
+          docx_color: colors.docx_color,
+          xlsx_color: colors.xlsx_color,
           // Add other colors as needed
         });
       }

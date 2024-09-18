@@ -39,3 +39,20 @@ export const StyledPrimaryButton = styled.button`
     opacity: 0.8;
   }
 `;
+
+
+
+export const StyledSecondaryButton = styled.button`
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border: 1px solid ${theme.primary};
+  border-radius: ${format.roundmd};
+  font-weight: bold;
+  color: ${theme.brand500};
+  background-color: ${theme.brand};
+  transition: opacity 0.3s, color 0.3s;
+
+  &:hover {
+    opacity: 0.8;
+  }
+`;
