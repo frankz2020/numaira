@@ -42,6 +42,11 @@ def mapExcelNumberToWord():
 
     return jsonify({"results": results}), 200
 
-@aiRoutes.route("/mapJsonExcelNumberToWord", methods=["POST"])
-def mapJsonExcelNumberToWord():
-    return jsonify({"results": "fuck"}), 200
+
+
+@aiRoutes.route("/replaceSentence", methods=["POST"])
+def replaceSentence():
+    data = request.get_json()
+    doc = data.get("doc")
+    excel = data.get("excel")
+    return jsonify({"message": "replaceSentence"}), 200

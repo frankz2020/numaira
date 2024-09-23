@@ -8,6 +8,8 @@ def read_docx(file_path):
     text_segments = [segment.strip() for segment in text_segments if segment.strip()]
     return text_segments
 
+
+# {[header, column] : value}
 def excel_to_list(filename):
     # to be coordinated
     df = pd.read_excel(filename, header=None)
