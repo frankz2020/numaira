@@ -307,6 +307,13 @@ const SyncSpace = () => {
             >
               go to review
             </div>
+            <div
+              onClick={() => {
+                router.push("/test");
+              }}
+            >
+             excel test
+            </div>
             <div style={{ color: theme.brand500, fontSize: format.textXS }}>
               Reset
             </div>
