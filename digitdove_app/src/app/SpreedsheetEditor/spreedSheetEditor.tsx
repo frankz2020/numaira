@@ -1,14 +1,10 @@
 "use client";
-"use client";
-
-import React, { useState, memo } from "react";
-import { read, utils } from "xlsx"; // Import xlsx functions to read and parse Excel
-import DataGrid, { CellClickArgs, CellMouseEvent, RenderRowProps, Row } from "react-data-grid"; // Import React Data Grid
-import "react-data-grid/lib/styles.css"; // Import the default styles for React Data Grid
-
-// Define the structure for rows and columns in React Data Grid
-type Row = { [key: string]: string | number };
-type Column = { key: string; name: string };
+import { useState, useCallback } from "react";
+import { Spreadsheet, CellBase, Matrix } from "react-spreadsheet";
+import { read, utils } from "xlsx";
+import { memo } from "react";
+type SpreadsheetData = (string | number | null)[][];
+type Row = { [key: string]: string | number | undefined }; // Define the Row type
 
 interface SelectedCell {
   rowIdx: number;
@@ -16,18 +12,18 @@ interface SelectedCell {
 }
 
 const SpreadsheetEditor: React.FC = () => {
-  const [columns, setColumns] = useState<Column[]>([]); // Grid columns state
-  const [rows, setRows] = useState<Row[]>([]); // Grid rows state
-  const [sheetNames, setSheetNames] = useState<string[]>([]); // List of all sheets
-  const [selectedSheet, setSelectedSheet] = useState<string>(""); // Currently selected sheet
-  const [workbook, setWorkbook] = useState<any>(null); // Store the workbook file
+  const [data, setData] = useState<Matrix<CellBase<any>>>([]); // Spreadsheet data as CellBase<any> type
+  const [isSelecting, setIsSelecting] = useState(false); // Tracks if the user is currently selecting cells
+  const [startCell, setStartCell] = useState<SelectedCell | null>(null); // Start cell for selection
+  const [selectedCells, setSelectedCells] = useState<SelectedCell[]>([]); // Track selected cells
+  const [hoveredCells, setHoveredCells] = useState<SelectedCell[]>([]); // Track hovered cells for hint
+  const [labelSelect, setLabelSelect] = useState<Boolean>(false);
 
-  const [startCell, setStartCell] = useState<SelectedCell | null>(null); // Starting point for selection
-  const [endCell, setEndCell] = useState<SelectedCell | null>(null); // Starting point for selection
-  const [selectedCells, setSelectedCells] = useState<SelectedCell[]>([]); // Selected cells
-  const [isSelecting, setIsSelecting] = useState<boolean>(false); // Track selection state
+  const [headerCells, setHeaderCells] = useState<SelectedCell[]>([]); // Track header cells selected
+  const [labelCells, setLabelCells] = useState<SelectedCell[]>([]); // Track label cells selected
 
-  // Function to handle file upload (read and parse Excel file)
+  const [relatedDataCells, setRelatedDataCells] = useState<SelectedCell[]>([]); // Track the data cells related to the selected headers and labels
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -35,156 +31,212 @@ const SpreadsheetEditor: React.FC = () => {
       reader.onload = (e) => {
         const data = e.target?.result;
         if (typeof data === "string" || data instanceof ArrayBuffer) {
-          // Parse the file using xlsx
           const workbookData = read(data, { type: "binary" });
-          const sheets = workbookData.SheetNames; // Get all the sheet names
-
-          // Store the workbook and sheet names in state
-          setWorkbook(workbookData);
-          setSheetNames(sheets);
-          setSelectedSheet(sheets[0]);
-
-          // Load the first sheet by default
-          loadSheet(workbookData, sheets[0]);
+          const sheets = workbookData.SheetNames;
+          loadSheet(workbookData, sheets[0]); // Load the first sheet by default
         }
       };
-      reader.readAsBinaryString(file); // Read file as binary string
+      reader.readAsBinaryString(file);
     }
   };
 
-  // ! here we are pushing the grid one row down so we can select headers :) 
+  // Assuming `data` is the Matrix<CellBase<any>> that holds the spreadsheet data
+  const getCellData = (
+    selectedCell: SelectedCell,
+    data: Matrix<CellBase<any>>
+  ): any => {
+    const { rowIdx, colIdx } = selectedCell;
+    // Check if the row and column indices are within the bounds of the data
+    if (
+      rowIdx >= 0 &&
+      rowIdx < data.length &&
+      colIdx >= 0 &&
+      colIdx < data[rowIdx].length
+    ) {
+      if (data[rowIdx][colIdx]) {
+        return data[rowIdx][colIdx].value; // Return the value from the selected cell
+      }
+    }
+
+    return null; // Return null if the indices are out of bounds
+  };
+
   const loadSheet = (workbook: any, sheetName: string) => {
     const sheet = workbook.Sheets[sheetName];
-  
-    // Get the range of cells in the sheet (this includes empty columns)
-    const range = utils.decode_range(sheet["!ref"] as string);
-  
-    const gridColumns: Column[] = [];
-    const headersRow: Row = {}; // The first row that will act as the "headers"
-  
-    // Iterate over the columns to create the headers row and empty placeholders for the actual headers
-    for (let C = range.s.c; C <= range.e.c; ++C) {
-      const cellAddress = utils.encode_cell({ r: range.s.r, c: C }); // Cell address in A1 notation
-      const cell = sheet[cellAddress]; // Get the cell from the sheet
-  
-      let header = cell ? String(cell.v) : ""; // If the cell is empty, assign an empty string
-      header = header.trim(); // Remove any extra whitespace
-  
-      // Assign the header to the first row of data (headersRow)
-      headersRow[`col_${C}`] = header; // Store the header in the row
-  
-      // Add empty placeholders for the column headers
-      gridColumns.push({
-        key: `col_${C}`, // Use unique key for columns
-        name: "", // Empty header name so the headers will be part of the content
-      });
+
+    // Extract JSON data from the sheet, replacing empty values with ""
+    const jsonData = utils.sheet_to_json<Row[]>(sheet, {
+      header: 1,
+      defval: "",
+    });
+
+    // Extract the first row to use as headers
+    const headers = jsonData[0] as unknown as string[]; // First row is assumed to be headers
+
+    // Convert the rest of the sheet to the spreadsheet format
+    const spreadsheetData: Matrix<CellBase<any>> = jsonData
+      .slice(1)
+      .map((row) =>
+        headers.map((_, index) => ({
+          value: row[index] !== undefined ? row[index] : "", // Use index to access row values
+        }))
+      );
+
+    // Update the state with the formatted data
+    setData(spreadsheetData);
+  };
+
+  // Handle data changes in the spreadsheet
+  const handleDataChange = (newData: Matrix<CellBase<any>>) => {
+    const simpleData: SpreadsheetData = newData.map((row) =>
+      row.map((cell) => cell?.value || null)
+    );
+
+    console.log("Updated data:", simpleData);
+    setData(newData); // Update the spreadsheet with new data
+  };
+
+  const MemoizedCell = memo(
+    ({ props, handleCellClick, handleCellHover, getCellStyle }: any) => {
+      return (
+        <td
+          {...props}
+          onClick={() => handleCellClick(props.row, props.column)}
+          onMouseOver={() => handleCellHover(props.row, props.column)} // Track hover events for hint
+          style={{
+            border: "1px solid lightgrey", // Add cell borders
+            padding: "8px", // Add padding for better spacing
+            maxWidth: "400px", // Limit the max width of the cell
+            textOverflow: "ellipsis", // Add ellipsis for overflowing content
+            wordWrap: "break-word", // Enable word wrapping
+            whiteSpace: "pre-wrap", // Preserve line breaks and allow wrapping
+            ...getCellStyle(props.row, props.column),
+          }}
+        >
+          {props.data?.value || ""}
+        </td>
+      );
     }
-  
-    // Convert the sheet to JSON (array of arrays) using the header row
-    const jsonData = utils.sheet_to_json<Row>(sheet, { header: 1 });
-  
-    // Remove the first row from jsonData (it represents the headers) to avoid duplication
-    const rowData = jsonData.slice(1); // Remaining data
-  
-    // Insert the headersRow at the top of the rowData
-    const gridRows = [headersRow, ...rowData.map((row) => {
-      const rowObj: Row = {};
-      gridColumns.forEach((col, index) => {
-        rowObj[col.key] = row[index] || ""; // Handle empty cell values
-      });
-      return rowObj;
-    })];
-  
-    setColumns(gridColumns); // Set the columns in the state
-    setRows(gridRows); // Set the rows in the state
-  };
-  
+  );
 
-  // Function to handle sheet selection
-  const handleSheetSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedSheet = event.target.value;
-    setSelectedSheet(selectedSheet);
+  // Add display name to resolve ESLint warning
+  MemoizedCell.displayName = "MemoizedCell";
 
-    if (workbook) {
-      loadSheet(workbook, selectedSheet); // Load the selected sheet using the stored workbook
-    }
-  };
+  // handle cell click to select cells
 
-  // Helper function to get the row index from the row object
-  const getRowIdx = (row: Row) => {
-    return rows.findIndex((r) => r === row); // Find the index of the row in the rows array
-  };
-
-  // Handle cell click to start/stop selection
-  const handleCellClick = (row: Row, columnKey: string, target: any) => {
-    console.log(row, columnKey, target);
-    const rowIdx = getRowIdx(row); // Get the row index from the row
-    const colIdx = columns.findIndex((col) => col.key === columnKey); // Get the column index from the column key
-  
-    if (!isSelecting) {
-      // Start selection
-      setStartCell({ rowIdx, colIdx });
-      setSelectedCells([{ rowIdx, colIdx }]); // Initially select the clicked cell
-      setIsSelecting(true); // Enable selecting mode
-    } else {
-      // End selection (second click)
-      const endCell = { rowIdx, colIdx };
+  const handleCellClick = useCallback(
+    (rowIdx: number, colIdx: number) => {
       const newSelectedCells: SelectedCell[] = [];
-  
-      // Calculate the min and max indices for rows and columns
-      const minRow = Math.min(startCell!.rowIdx, endCell.rowIdx);
-      const maxRow = Math.max(startCell!.rowIdx, endCell.rowIdx);
-      const minCol = Math.min(startCell!.colIdx, endCell.colIdx);
-      const maxCol = Math.max(startCell!.colIdx, endCell.colIdx);
-  
-      // Iterate over the range of rows and columns and add each cell to the selection
+
+      if (!isSelecting) {
+        setStartCell({ rowIdx, colIdx });
+        setSelectedCells([{ rowIdx, colIdx }]);
+        setIsSelecting(true);
+        setHoveredCells([]);
+      } else {
+        const endCell = { rowIdx, colIdx };
+
+        const minRow = Math.min(startCell!.rowIdx, endCell.rowIdx);
+        const maxRow = Math.max(startCell!.rowIdx, endCell.rowIdx);
+        const minCol = Math.min(startCell!.colIdx, endCell.colIdx);
+        const maxCol = Math.max(startCell!.colIdx, endCell.colIdx);
+
+        for (let r = minRow; r <= maxRow; r++) {
+          for (let c = minCol; c <= maxCol; c++) {
+            newSelectedCells.push({ rowIdx: r, colIdx: c });
+          }
+        }
+
+        if (labelSelect) {
+          setLabelCells([...labelCells, ...newSelectedCells]);
+
+          const dataCells: SelectedCell[] = [];
+          newSelectedCells.forEach((labelCell) => {
+            headerCells.forEach((headerCell) => {
+              dataCells.push({
+                rowIdx: labelCell.rowIdx,
+                colIdx: headerCell.colIdx,
+              });
+            });
+          });
+          setRelatedDataCells(dataCells);
+        } else {
+          setHeaderCells([...headerCells, ...newSelectedCells]);
+        }
+
+        setSelectedCells(newSelectedCells);
+        setHoveredCells([]);
+        setIsSelecting(false);
+        setLabelSelect(true);
+      }
+    },
+    [isSelecting, startCell, headerCells, labelCells, labelSelect]
+  );
+
+  const handleCellHover = useCallback(
+    (rowIdx: number, colIdx: number) => {
+      if (!isSelecting || !startCell) return;
+
+      const newHoveredCells: SelectedCell[] = [];
+
+      const minRow = Math.min(startCell.rowIdx, rowIdx);
+      const maxRow = Math.max(startCell.rowIdx, rowIdx);
+      const minCol = Math.min(startCell.colIdx, colIdx);
+      const maxCol = Math.max(startCell.colIdx, colIdx);
+
       for (let r = minRow; r <= maxRow; r++) {
         for (let c = minCol; c <= maxCol; c++) {
-          newSelectedCells.push({ rowIdx: r, colIdx: c });
+          newHoveredCells.push({ rowIdx: r, colIdx: c });
         }
       }
-  
-      // Add 'selected-cell' class to each cell in the selection
-      applySelection(newSelectedCells);
-  
-      setSelectedCells(newSelectedCells); // Set all the selected cells in the range
-      setIsSelecting(false); // Disable selecting mode
-    }
-  };
-  
-  // Function to apply the 'selected-cell' class to each selected cell
-  const applySelection = (selectedCells: SelectedCell[]) => {
-    // Loop through each selected cell
-    for (let cell of selectedCells) {
-      const rowIdx = cell.rowIdx + 2; // aria-rowindex is 1-based and we dragged the form one line lower, so we add 2
-      const colIdx = cell.colIdx + 1; // aria-colindex is 1-based, so we add 1
-  
-      // Query the row based on aria-rowindex
-      const rowElement = document.querySelector(`[aria-rowindex="${rowIdx}"]`);
-  
-      if (rowElement) {
-        // Query the cell based on aria-colindex within the row
-        const cellElement = rowElement.querySelector(`[aria-colindex="${colIdx}"]`);
-        if (cellElement) {
-          cellElement.classList.add('selected-cell'); // Add the CSS class to highlight the cell
-        }
-      }
-    }
-  };
-  
 
-  // Function to apply custom styles to selected cells
-  const isSelected = (rowIdx: number, colIdx: number) => {
-    return selectedCells.some(
-      (cell) => cell.rowIdx === rowIdx && cell.colIdx === colIdx
-    );
-  };
+      setHoveredCells(newHoveredCells);
+    },
+    [isSelecting, startCell]
+  );
+
+  // Apply styles to selected or hovered cells
+  const getCellStyle = useCallback(
+    (rowIdx: number, colIdx: number) => {
+      const isHeaderSelected = headerCells.some(
+        (cell) => cell.rowIdx === rowIdx && cell.colIdx === colIdx
+      );
+      const isLabelSelected = labelCells.some(
+        (cell) => cell.rowIdx === rowIdx && cell.colIdx === colIdx
+      );
+      const isRelatedDataSelected = relatedDataCells.some(
+        (cell) => cell.rowIdx === rowIdx && cell.colIdx === colIdx
+      );
+      const isHovered = hoveredCells.some(
+        (cell) => cell.rowIdx === rowIdx && cell.colIdx === colIdx
+      );
+
+      if (isHeaderSelected) {
+        return { backgroundColor: "lightblue", border: "1px solid blue" };
+      } else if (isLabelSelected) {
+        return { backgroundColor: "lightgreen", border: "1px solid green" };
+      } else if (isRelatedDataSelected) {
+        return { backgroundColor: "lightcoral", border: "1px solid red" };
+      } else if (isHovered) {
+        return { backgroundColor: "lightyellow", border: "1px solid yellow" };
+      }
+      return {};
+    },
+    [headerCells, labelCells, relatedDataCells, hoveredCells]
+  );
 
   return (
-    <div>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        padding: "20px",
+        maxHeight: "80vh",
+      }}
+    >
       <h2>Spreadsheet Editor</h2>
 
-      {/* File input to upload Excel files */}
       <input
         type="file"
         accept=".xlsx, .xls"
@@ -192,36 +244,42 @@ const SpreadsheetEditor: React.FC = () => {
         style={{ marginBottom: "20px" }}
       />
 
-      {/* Sheet selector */}
-      {sheetNames.length > 0 && (
-        <select value={selectedSheet} onChange={handleSheetSelect}>
-          {sheetNames.map((sheetName) => (
-            <option key={sheetName} value={sheetName}>
-              {sheetName}
-            </option>
-          ))}
-        </select>
-      )}
-
-      {/* Render the React Data Grid */}
-      {columns.length > 0 && rows.length > 0 ? (
-        <DataGrid
-          columns={columns}
-          rows={rows}
-          style={{ height: 500 }}
-          onCellClick={(args: CellClickArgs<any, any>, event: CellMouseEvent) =>
-            handleCellClick(args.row, args.column.key, event.target)
-          } // Use row and column key
-          //   onCellMouseEnter={(args) => handleCellMouseEnter(args.row, args.column.key)} // Use row and column key
-          //   renderers={renderCell} // Custom renderer for cells
-        />
+      {data.length > 0 ? (
+        <div
+          style={{
+            width: "100%",
+            height: "100%", // Ensure it takes up the full height of its parent
+            overflowX: "auto", // Enable horizontal scroll
+            overflowY: "auto", // Enable vertical scroll
+            border: "1px solid #ccc", // Add a border around the spreadsheet
+          }}
+        >
+          <Spreadsheet
+            data={data}
+            onChange={handleDataChange}
+            Cell={(props) => (
+              <MemoizedCell
+                props={props}
+                handleCellClick={handleCellClick}
+                handleCellHover={handleCellHover}
+                getCellStyle={getCellStyle}
+              />
+            )}
+          />
+        </div>
       ) : (
         <p>Please upload an Excel file to view the data.</p>
       )}
 
       <style>{`
         .selected-cell {
-          background-color: lightblue !important;
+          background-color: lightgreen !important;
+        }
+        td {
+          border: 1px solid #ccc; /* Add borders between cells */
+        }
+        td:hover {
+          background-color: #f1f1f1; /* Light hover effect */
         }
       `}</style>
     </div>
