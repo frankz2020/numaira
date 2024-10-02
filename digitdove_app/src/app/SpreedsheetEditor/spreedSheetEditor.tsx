@@ -63,28 +63,30 @@ const SpreadsheetEditor: React.FC = () => {
 
   const loadSheet = (workbook: any, sheetName: string) => {
     const sheet = workbook.Sheets[sheetName];
-
+  
     // Extract JSON data from the sheet, replacing empty values with ""
     const jsonData = utils.sheet_to_json<Row[]>(sheet, {
       header: 1,
       defval: "",
     });
-
+  
     // Extract the first row to use as headers
     const headers = jsonData[0] as unknown as string[]; // First row is assumed to be headers
-
-    // Convert the rest of the sheet to the spreadsheet format
-    const spreadsheetData: Matrix<CellBase<any>> = jsonData
-      .slice(1)
-      .map((row) =>
+  
+    // Include the headers as the first row of the spreadsheet data
+    const spreadsheetData: Matrix<CellBase<any>> = [
+      headers.map(header => ({ value: header })), // Add the headers as the first row
+      ...jsonData.slice(1).map((row) =>
         headers.map((_, index) => ({
           value: row[index] !== undefined ? row[index] : "", // Use index to access row values
         }))
-      );
-
-    // Update the state with the formatted data
+      ),
+    ];
+  
+    // Update the state with the formatted data, including the headers as the first row
     setData(spreadsheetData);
   };
+  
 
   // Handle data changes in the spreadsheet
   const handleDataChange = (newData: Matrix<CellBase<any>>) => {
@@ -101,7 +103,10 @@ const SpreadsheetEditor: React.FC = () => {
       return (
         <td
           {...props}
-          onClick={() => handleCellClick(props.row, props.column)}
+          onClick={(event) => {
+            event.stopPropagation(); // Prevent propagation to parent elements
+            handleCellClick(props.row, props.column);
+          }}
           onMouseOver={() => handleCellHover(props.row, props.column)} // Track hover events for hint
           style={{
             border: "1px solid lightgrey", // Add cell borders
@@ -118,6 +123,7 @@ const SpreadsheetEditor: React.FC = () => {
       );
     }
   );
+  
 
   // Add display name to resolve ESLint warning
   MemoizedCell.displayName = "MemoizedCell";
@@ -176,24 +182,28 @@ const SpreadsheetEditor: React.FC = () => {
   const handleCellHover = useCallback(
     (rowIdx: number, colIdx: number) => {
       if (!isSelecting || !startCell) return;
-
+  
       const newHoveredCells: SelectedCell[] = [];
-
+  
       const minRow = Math.min(startCell.rowIdx, rowIdx);
       const maxRow = Math.max(startCell.rowIdx, rowIdx);
       const minCol = Math.min(startCell.colIdx, colIdx);
       const maxCol = Math.max(startCell.colIdx, colIdx);
-
+  
       for (let r = minRow; r <= maxRow; r++) {
         for (let c = minCol; c <= maxCol; c++) {
           newHoveredCells.push({ rowIdx: r, colIdx: c });
         }
       }
-
-      setHoveredCells(newHoveredCells);
+  
+      // Only update if hovered cells actually change
+      if (JSON.stringify(newHoveredCells) !== JSON.stringify(hoveredCells)) {
+        setHoveredCells(newHoveredCells); // Set the hovered cells for the selection hint
+      }
     },
-    [isSelecting, startCell]
+    [isSelecting, startCell, hoveredCells] // Depend only on required variables
   );
+  
 
   // Apply styles to selected or hovered cells
   const getCellStyle = useCallback(
