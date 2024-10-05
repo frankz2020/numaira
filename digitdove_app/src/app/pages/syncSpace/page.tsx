@@ -31,6 +31,7 @@ import ProgressBar from "@/app/components/progressBar";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
 import { readDocxFile } from "./utils";
+import SpreadSheetRel from "./spreadSheetRel";
 enum SyncSpaceStep {
   syncSpaceTargetFile,
   AssociatedData,
@@ -152,13 +153,45 @@ const readExcelFile = (file: File, numberOnly: boolean): Promise<any[]> => {
   });
 };
 
+// Define the slide-up keyframes animation
+const slideUp = keyframes`
+  from {
+    transform: translateY(100%); /* Start from the bottom */
+    opacity: 0; /* Hidden */
+  }
+  to {
+    transform: translateY(0); /* Move to the top */
+    opacity: 1; /* Fully visible */
+  }
+`;
+
+// Create the styled div for the absolute container
+const AbsoluteContainer = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.5
+  ); /* Optional: Semi-transparent background */
+  z-index: 9999; /* Ensure it's on top */
+
+  &.show {
+    animation: ${slideUp} 0.5s ease-in-out forwards; /* Apply slide-up animation */
+  }
+`;
+
 const SyncSpace = () => {
   const { format } = useFormat();
   const { theme } = useTheme();
   const {
     syncSpaceTargetFile,
     setSyncSpaceTargetFile,
-    syncSpaceOutputFile, 
+    syncSpaceOutputFile,
     setSyncSpaceOutputFile,
   } = useGlobalContext();
   const { backendUrl } = useGlobalContext();
@@ -176,6 +209,7 @@ const SyncSpace = () => {
   const [newData, setNewData] = useState<File | null>(null);
   const [newDataValue, setNewDataValue] = useState<any[] | null>(null);
 
+  const [showMapSpreadsheetRel, setShowMapSpreadsheetRel] = useState(false);
   type ErroType = {
     error: boolean;
     name: string;
@@ -278,7 +312,7 @@ const SyncSpace = () => {
 
   useEffect(() => {
     if (currentStep === SyncSpaceStep.ReviewExport) {
-      console.log('go to review')
+      console.log("go to review");
       router.push("/syncSpace/review");
     }
   }, [currentStep]);
@@ -287,6 +321,12 @@ const SyncSpace = () => {
     assert(outputFile != null);
     saveAs(outputFile, "updated_document.docx");
   };
+
+  useEffect(() => {
+    if (currentStep === SyncSpaceStep.NewData) {
+      setShowMapSpreadsheetRel(true);
+    }
+  }, [currentStep]);
 
   return (
     <div className="flex flex-row-reverse h-100" style={{ height: "100%" }}>
@@ -312,7 +352,7 @@ const SyncSpace = () => {
                 router.push("/test");
               }}
             >
-             excel test
+              excel test
             </div>
             <div style={{ color: theme.brand500, fontSize: format.textXS }}>
               Reset
@@ -401,6 +441,21 @@ const SyncSpace = () => {
             atStage={currentStep == SyncSpaceStep.NewData}
             information="Upload your documents here"
           />
+
+          {/* absolute div to show the mapSpreadsheetRel */}
+          {showMapSpreadsheetRel && (
+            <AbsoluteContainer className={showMapSpreadsheetRel ? "show" : ""}>
+              <SpreadSheetRel
+                inputExcel={associatedData!}
+                onBack={() => {
+                  setShowMapSpreadsheetRel(false);
+                  console.log("back");
+                  setCurrentStep(SyncSpaceStep.NewData);
+                }}
+              />
+            </AbsoluteContainer>
+          )}
+
           {currentStep == SyncSpaceStep.NewData && (
             <UploadButton
               fileType={[".xlsx"]}
