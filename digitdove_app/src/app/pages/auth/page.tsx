@@ -23,7 +23,7 @@ const ErrorText = styled.div`
 
 const Login = () => {
   const router = useRouter();
-  const { setLoggedIn } = useGlobalContext();
+  const { setLoggedIn, setUser } = useGlobalContext();
   const { format } = useFormat();
   const { theme } = useTheme();
   const { backendUrl } = useGlobalContext();
@@ -91,6 +91,7 @@ const Login = () => {
 
         aliveResponse.json().then((data: any) => {
           console.log("alive:", data);
+          setUser(data.user)
         });
       } catch (error) {
         console.log(error);

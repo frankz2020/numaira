@@ -1,5 +1,6 @@
 from flask import request, jsonify, Blueprint
 from config import app, db
+from models.SyncSpace import SyncSpace
 from models.User import User
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
@@ -89,3 +90,15 @@ def deleteUser(id):
     db.session.commit()
     return jsonify({'message': 'User deleted successfully'})
   
+@userRoutes.route("/<int:id>/syncspaces", methods=['GET'])
+def get_syncspaces_for_user(id):
+    # Fetch the user by id
+    user = User.query.get_or_404(id)
+
+    # Get all syncspaces for the user
+    print("test")
+    print(user)
+    syncspaces = SyncSpace.query.filter_by(user_id=user.id).all()
+
+    # Return the list of syncspaces serialized
+    return jsonify([syncspace.serialize() for syncspace in syncspaces])

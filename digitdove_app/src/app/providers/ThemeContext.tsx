@@ -21,6 +21,7 @@ interface Theme {
   neutral700: string;
   neutral1000: string;
   brand: string;
+  brand100: string;
   brand200: string;
   brand500: string;
   brand800: string;
@@ -82,6 +83,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
           warning_background: colors.warning_background,
           warning_dark: colors.warning_dark,
           brand: colors.brand,
+          brand100: colors.brand100,
           brand200: colors.brand200,
           brand500: colors.brand500,
           brand800: colors.brand800,
@@ -104,6 +106,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
           warning: colors.warning,
           warning_background: colors.warning_background,
           brand: colors.brand,
+          brand100: colors.brand100,
           brand200: colors.brand200,
           brand500: colors.brand500,
           brand800: colors.brand800,

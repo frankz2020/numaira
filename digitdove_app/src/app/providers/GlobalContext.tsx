@@ -11,7 +11,7 @@ interface GlobalContextProps {
   // Define the shape of your global state here
   loggedIn: Boolean;
   setLoggedIn: (loggedIn: Boolean) => void;
-  user: string | null;
+  user: any | null;
   setUser: (user: string | null) => void;
   backendUrl: string;
   syncSpaceTargetFile: any;
@@ -28,7 +28,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
   const [syncSpaceTargetFile, setSyncSpaceTargetFile] = useState<any>(null);
   const [syncSpaceTargetHTML, setSyncSpaceTargetHTML] = useState<any>(null);
   const [syncSpaceOutputFile, setSyncSpaceOutputFile] = useState<any>(null);
-  
+  const [userSyncSpaceIds, setUserSyncSpaceIds] = useState<any>(null);
   const backendUrl = "http://127.0.0.1:8000/";
 
   const fetchCurrentUser = async () => {
@@ -38,8 +38,10 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
         credentials: "include",
       });
       if (response.ok) {
+        
         const data = await response.json();
-        setUser(data.username); // Adjust based on your user object structure
+        console.log("fetching current user", data)
+        setUser(data.user); // Adjust based on your user object structure
         setLoggedIn(true);
       } else {
         setLoggedIn(false);
@@ -53,7 +55,9 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    console.log("global context, fetching looged in user")
     fetchCurrentUser();
+    console.log(user)
   }, []);
 
   return (
