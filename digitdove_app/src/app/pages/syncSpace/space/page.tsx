@@ -34,6 +34,8 @@ import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
 import { readDocxFile } from "../utils";
 import SpreadSheetRel from "./spreadSheetRel";
+import UploadCard from "../uploadCard";
+import SourceSelection from "./sourceSelection";
 enum SyncSpaceStep {
   syncSpaceTargetFile,
   AssociatedData,
@@ -270,6 +272,8 @@ const SyncSpace = () => {
     setTooltipPos({ x: e.clientX, y: e.clientY });
   };
 
+  const [openSourceSelection, setOpenSourceSelection] = useState(false);
+
   const FileCard = styled.div`
     background-color: ${theme.neutral50};
     border-radius: ${format.roundmd};
@@ -278,7 +282,7 @@ const SyncSpace = () => {
     padding: 1rem;
     margin: 1rem;
     width: 310px;
-    height: 240px;
+    min-height: 240px;
   `;
 
   const FileHolder = styled.div`
@@ -288,7 +292,7 @@ const SyncSpace = () => {
     border-width: 2px;
     padding: 1rem;
     width: 90%;
-    height: 140px;
+    min-height: 140px;
   `;
 
   const sendToBackend = async () => {
@@ -368,6 +372,28 @@ const SyncSpace = () => {
     setSyncSpaceOutputFile(output);
   };
 
+  const uploadTargetFile = async (file: File) => {
+    try {
+      const { text, html, arrayBuffer } = await readDocxFile(file);
+      setTargetFileText(text);
+      setSyncSpaceTargetFile(file);
+    } catch (error) {
+      console.error("Error reading .docx file:", error);
+    }
+  };
+
+    const uploadDataSource = async (file: File) => {
+    console.log("associatedData", file);
+    setAssociatedData(file);
+    try {
+      const data = await readExcelFile(file, true);
+      setAssociatedDataValue(data);
+      console.log("Extracted data:", data);
+    } catch (error) {
+      console.error("Error reading .xlsx file:", error);
+    }
+  };
+
   useEffect(() => {
     if (currentStep === SyncSpaceStep.ReviewExport) {
       console.log("go to review");
@@ -389,7 +415,7 @@ const SyncSpace = () => {
   return (
     <div className="flex flex-row-reverse h-100" style={{ height: "100%" }}>
       <div
-        className="h-100"
+        className="h-100 hidden"
         style={{ width: "30%", backgroundColor: theme.neutral50 }}
       >
         <div className="p-3">
@@ -586,7 +612,10 @@ const SyncSpace = () => {
         </div>
       </div>
 
-      <div className="flex flex-col" style={{ width: "70%" }}>
+      <div
+        className="flex flex-col justify-center"
+        style={{ width: "100%", height: "100%" }}
+      >
         {error.error && (
           <div
             className="flex w-full p-3"
@@ -597,7 +626,6 @@ const SyncSpace = () => {
             }}
           >
             <div style={{ fontWeight: 700, marginRight: "2px" }}>
-              {" "}
               {error.name}{" "}
             </div>
             <div>The operation could not be completed.</div>
@@ -617,7 +645,10 @@ const SyncSpace = () => {
                 Target File
               </div>
               <TooltipWrapper
-                onMouseEnter={(e: React.MouseEvent) => {setIsTargetFileTooltipVisible(true); handleMouseMove(e)}}
+                onMouseEnter={(e: React.MouseEvent) => {
+                  setIsTargetFileTooltipVisible(true);
+                  handleMouseMove(e);
+                }}
                 onMouseLeave={() => setIsTargetFileTooltipVisible(false)}
               >
                 <QuestionSVG />
@@ -633,33 +664,62 @@ const SyncSpace = () => {
             <div className="flex justify-center" style={{ width: "100%" }}>
               <FileHolder>
                 <div>
-                  <div
-                    style={{
-                      backgroundColor: theme.brand100,
-                      borderRadius: format.roundsm,
-                      borderColor: theme.brand200,
-                      borderWidth: "2px",
-                      borderStyle: "dotted",
-                    }}
-                    className="flex justify-around py-2"
-                  >
+                  {!targetFileText ? (
+                    <UploadCard
+                      onClick={(file: File) => uploadTargetFile(file)}
+                      name="Select File"
+                      svgType={"target"}
+                      fileType={[".docx"]}
+                    />
+                  ) : (
                     <div
                       style={{
-                        backgroundColor: theme.neutral,
                         borderRadius: format.roundsm,
+                        borderColor: theme.brand100,
+                        borderWidth: "1px",
+                        padding: "3px",
                       }}
-                      className="p-4 "
                     >
-                      <UploadSVG />
-                    </div>
+                      {getPlaceHolder(syncSpaceTargetFile.name)}
+                      <div className="flex justify-center mt-3 flex-wrap">
+                        <div>{syncSpaceTargetFile.name}</div>
+                        <div
+                          style={{
+                            wordBreak: "break-all", // This will break the text to fit within the available space
+                            maxWidth: "200px", // Optional: set a max width for the filename display
+                          }}
+                        >
+                          {/* Hidden file input */}
+                          <input
+                            type="file"
+                            id="fileInput"
+                            accept=".docx"
+                            style={{ display: "none" }} // Hide the file input
+                            onChange={(
+                              event: React.ChangeEvent<HTMLInputElement>
+                            ) => {
+                              const file = event.target.files?.[0]; // Get the selected file
+                              if (file) {
+                                uploadTargetFile(file); // Call the upload function with the new file
+                              }
+                            }}
+                          />
 
-                    <div
-                      style={{ fontWeight: 600, fontSize: format.textMD }}
-                      className="items-center flex flex-col justify-center me-2"
-                    >
-                      Select File
+                          {/* Label as the button that triggers the file input */}
+                          <label
+                            htmlFor="fileInput" // Ties the label to the hidden file input
+                            style={{
+                              cursor: "pointer", // Make it clear this is clickable
+                              color: theme.brand500, // Optional: Add some styling for the reupload button
+                              textDecoration: "underline", // Optional: Add underline for link effect
+                            }}
+                          >
+                            Reupload
+                          </label>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </FileHolder>
             </div>
@@ -693,7 +753,10 @@ const SyncSpace = () => {
                 Data Source(s)
               </div>
               <TooltipWrapper
-                onMouseEnter={(e: React.MouseEvent) => {setIsSourceDataTooltipVisible(true); handleMouseMove(e)}}
+                onMouseEnter={(e: React.MouseEvent) => {
+                  setIsSourceDataTooltipVisible(true);
+                  handleMouseMove(e);
+                }}
                 onMouseLeave={() => setIsSourceDataTooltipVisible(false)}
               >
                 <QuestionSVG />
@@ -710,34 +773,25 @@ const SyncSpace = () => {
             <div className="flex justify-center" style={{ width: "100%" }}>
               <FileHolder>
                 <div>
-                  <div
-                    style={{
-                      backgroundColor: theme.brand100,
-                      borderRadius: format.roundsm,
-                      borderColor: theme.brand200,
-                      borderWidth: "2px",
-                      borderStyle: "dotted",
+                  <UploadCard
+                    functional={false}
+                    noneUploadClick={() => {
+                      setOpenSourceSelection(true);
                     }}
-                    className="flex justify-around py-2"
-                  >
-                    <div
-                      style={{
-                        backgroundColor: theme.neutral,
-                        borderRadius: format.roundsm,
-                      }}
-                      className="p-4"
-                    >
-                      <UpdataSVG />
-                    </div>
-
-                    <div
-                      style={{ fontWeight: 600, fontSize: format.textMD }}
-                      className="items-center flex flex-col justify-center me-2"
-                    >
-                      Add Data
-                    </div>
-                  </div>
+                    name="Add Data"
+                    svgType={"data"}
+                    fileType={[".xlsx"]}
+                  />
                 </div>
+
+                {/* source selection, this is absolute */}
+                {openSourceSelection && (
+                  <SourceSelection
+                    open={openSourceSelection}
+                    onClose={() => setOpenSourceSelection(false)}
+                    upload={uploadDataSource}
+                  />
+                )}
               </FileHolder>
             </div>
             <div
